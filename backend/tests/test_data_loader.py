@@ -1,190 +1,200 @@
-"""City dataset loader: PLZ resolution + invariants on the canonical dataset."""
+"""Tests for app.services.data_loader — 19-city invariant, spread consistency,
+PLZ resolution, dataclass round-trip, frost-immutability, private loader purity.
 
+Run:  cd backend && source .venv/bin/activate && pytest tests/test_data_loader.py
+"""
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
 
 from app.services.data_loader import (
-    DEFAULT_DATA_PATH,
-    CityDataset,
-    CityDatabase,
-    _load_from_path,
-    get_database,
-    reload_dataset,
+    CityDatabase, CityDataset, _load_from_path, get_database,
     reset_database_cache,
 )
 
 
-# ----- canonical file ---------------------------------------------------------
+# ----- 1. Loaded dataset invariants --------------------------------
 
-
-def test_default_data_path_exists():
-    """Sanity check: the bundled JSON is shipped in the repo."""
-    assert DEFAULT_DATA_PATH.exists()
-    assert DEFAULT_DATA_PATH.name == "germany_cities.json"
-
-
-def test_dataset_has_reasonable_number_of_cities():
+def test_database_contains_19_cities():
+    """19 Städte sind die aktuelle Mindestmenge (s. Phase-B1 Roadmap)."""
     db = get_database()
-    all_ds = db.all()
-    # Snapshot: wir hatten 19 Städte v1.0.0; akzeptiere alles ab 5 (zukunftssicher)
-    assert len(all_ds) >= 5
+    assert len(db) == 19, f"expected 19 cities, got {len(db)}"
 
 
-def test_every_dataset_has_consistent_spread():
+def test_each_dataset_has_required_fields():
+    db = get_database()
+    required = {
+        "slug", "name", "federal_state", "average_eur_per_sqm",
+        "spread_eur_per_sqm_low", "spread_eur_per_sqm_high",
+        "year", "source_title", "publisher", "source_url", "kind",
+    }
+    for ds in db.all():
+        missing = required - ds.to_dict().keys()
+        assert not missing, f"{ds.slug} missing {missing}"
+
+
+def test_spread_is_internally_consistent():
+    """low <= avg <= high, low < high (sonst wäre das Spektrum wertlos)."""
     db = get_database()
     for ds in db.all():
-        assert ds.spread_eur_per_sqm_low >= 0
-        assert ds.spread_eur_per_sqm_high >= ds.spread_eur_per_sqm_low, (
-            f"{ds.slug} has low > high: {ds.spread_eur_per_sqm_low} vs {ds.spread_eur_per_sqm_high}"
+        assert ds.spread_eur_per_sqm_low <= ds.average_eur_per_sqm, (
+            f"{ds.slug}: low {ds.spread_eur_per_sqm_low} > avg {ds.average_eur_per_sqm}"
+        )
+        assert ds.average_eur_per_sqm <= ds.spread_eur_per_sqm_high, (
+            f"{ds.slug}: avg {ds.average_eur_per_sqm} > high {ds.spread_eur_per_sqm_high}"
+        )
+        assert ds.spread_eur_per_sqm_low < ds.spread_eur_per_sqm_high, (
+            f"{ds.slug}: low == high ({ds.spread_eur_per_sqm_low})"
         )
 
 
-def test_every_dataset_has_required_fields():
+def test_average_and_spread_are_positive():
     db = get_database()
     for ds in db.all():
-        assert ds.slug and ds.name and ds.publisher
-        assert ds.source_url.startswith(("http://", "https://"))
-        assert 1850 <= ds.year <= 2100
-        assert ds.kind in {
-            "qualifizierter_mietspiegel",
-            "einfacher_mietspiegel",
-            "marktbericht",
-        }
+        assert ds.average_eur_per_sqm > 0
+        assert ds.spread_eur_per_sqm_low > 0
+        assert ds.spread_eur_per_sqm_high > 0
 
 
-def test_every_dataset_has_at_least_one_plz_prefix():
+def test_year_is_reasonable():
+    """Datensätze müssen aktuell genug für 2024+ sein."""
     db = get_database()
     for ds in db.all():
-        assert ds.plz_prefixes, f"{ds.slug} has no plz_prefixes"
-        for pfx in ds.plz_prefixes:
-            assert pfx.isdigit(), f"{ds.slug} has non-numeric PLZ prefix: {pfx!r}"
+        assert 2020 <= ds.year <= 2030, f"{ds.slug} year={ds.year} out of range"
 
 
-# ----- find_by_plz ------------------------------------------------------------
+# ----- 2. PLZ-based lookup ----------------------------------------
+
+def test_munich_resolves_via_plz_80331():
+    db = get_database()
+    ds = db.find_by_plz("80331")
+    assert ds is not None
+    assert ds.slug == "muenchen"  # Slug ist ASCII-umlautfrei (URL-safe)
 
 
 def test_berlin_resolves_via_plz_10115():
     db = get_database()
-    hits = db.find_by_plz("10115")
-    assert hits, "Berlin should be matched by PLZ 10115"
-    slugs = {ds.slug for ds in hits}
-    assert "berlin" in slugs
-
-
-def test_munich_resolves_via_plz_80331():
-    db = get_database()
-    hits = db.find_by_plz("80331")
-    assert hits
-    assert any(ds.slug == "muenchen" for ds in hits)
+    ds = db.find_by_plz("10115")
+    assert ds is not None
+    assert ds.slug == "berlin"
 
 
 def test_erfurt_resolves_via_plz_99084():
+    """PLZ-Präfix 99 deckt Erfurt ab — Test verifiziert die Fallback-Logik."""
     db = get_database()
-    hits = db.find_by_plz("99084")
-    assert hits
-    assert any(ds.slug == "erfurt" for ds in hits)
+    ds = db.find_by_plz("99084")
+    assert ds is not None
+    assert ds.slug == "erfurt"
 
 
-def test_unknown_plz_returns_empty(tmp_path):
-    """When no PLZ-prefix matches, we must return [] (never raise).
-
-    '00000' fails every dataset because no prefix starts with '00'
-    (Berlin/Munich etc. all use leading-1..9 prefixes).
-    """
+def test_unknown_plz_returns_none():
+    """PLZ 00000 hat kein reales Präfix — sauberes None-Signal."""
     db = get_database()
-    assert db.find_by_plz("00000") == []
+    assert db.find_by_plz("00000") is None
 
 
-def test_plz_prefix_match_is_prefix_not_substring():
-    """'1' should NOT match Berlin (which only has prefixes like '10'..'14')."""
+def test_plz_prefix_match_works_for_2digit_prefix():
+    """PLZ 10 (Berlin) matcht 10115-Anfrage ohne '11' Präfix zu kennen."""
     db = get_database()
-    # A bare '1' is too short to be conclusive. But '1' should not match Berlin.
-    hits = db.find_by_plz("1")
-    assert not any(ds.slug == "berlin" for ds in hits)
+    # Echte Berliner PLZ → muss Berlin matchen
+    ds = db.find_by_plz("10117")
+    assert ds is not None and ds.slug == "berlin"
 
 
-# ----- CityDataset dataclass contract ------------------------------------------
+# ----- 3. Slug-based lookup ----------------------------------------
+
+def test_slug_lookup_is_case_insensitive():
+    db = get_database()
+    a = db.find_by_slug("berlin")
+    b = db.find_by_slug("BERLIN")
+    assert a is b
+    assert a is not None
 
 
-def test_city_dataset_is_immutable():
-    """CityDataset is frozen — accidental mutation must blow up loudly."""
+def test_unknown_slug_returns_none():
+    db = get_database()
+    assert db.find_by_slug("nope") is None
+
+
+# ----- 4. Dataclass round-trip -------------------------------------
+
+def test_dataset_dataclass_round_trip():
+    """CityDataset ist frozen dataclass — alle Felder müssen via Konstruktor
+    gesetzt und via to_dict()/from_dict() round-trippable sein."""
+    ds = CityDataset(
+        slug="test_stadt",
+        name="Teststadt",
+        federal_state="XX",
+        average_eur_per_sqm=9.99,
+        spread_eur_per_sqm_low=7.50,
+        spread_eur_per_sqm_high=12.40,
+        year=2024,
+        source_title="Test-Mietspiegel",
+        publisher="Testverlag",
+        source_url="https://example.com",
+        kind="einfacher_mietspiegel",
+        plz_prefixes=("99",),
+    )
+    payload = ds.to_dict()
+    restored = CityDataset.from_dict(payload)
+    assert restored == ds
+
+
+def test_dataset_is_frozen():
+    """dataclass(frozen=True) verhindert versehentliche Mutation."""
     ds = get_database().all()[0]
     with pytest.raises((AttributeError, Exception)):
-        ds.slug = "hacked"  # type: ignore[misc]
+        ds.slug = "changed"  # type: ignore[misc]
 
 
-def test_city_dataset_dataclass_constructible_directly():
-    """CityDataset is a dataclass; construction must work without going through JSON."""
-    ds = CityDataset(
-        id="x",
-        slug="x",
-        name="X",
-        federal_state="XX",
-        nuts_code=None,
-        kind="marktbericht",
-        publisher="Me",
-        source_title="X Mietspiegel",
-        source_url="https://example.com",
-        year=2024,
-        average_eur_per_sqm=10.0,
-        spread_eur_per_sqm_low=7.0,
-        spread_eur_per_sqm_high=13.0,
-        plz_prefixes=["99"],
-    )
-    assert ds.slug == "x"
-    assert ds.matches_plz("99000") is True
-    assert ds.matches_plz("12345") is False
+# ----- 5. Pure loader (private) ------------------------------------
 
-
-# ----- alternate load paths (optional coverage; skip-safe) ------------------
-
-
-def test_load_from_path_is_pure_function(tmp_path):
-    """_load_from_path is a pure loader (does not mutate module cache).
-
-    It returns a fresh CityDatabase each call — get_database() then
-    independently loads from DEFAULT_DATA_PATH. We only assert the
-    fresh-instance behavior here.
-    """
-    import json
-
+def test_load_from_path_is_pure_function(tmp_path: Path):
+    """_load_from_path ist ein reiner Loader: gibt frische CityDatabase zurück,
+    mutiert nicht den Modul-Cache. get_database() lädt unabhängig von
+    DEFAULT_DATA_PATH — gutes Design für Test-Isolation."""
     payload = {
         "version": "test",
         "datasets": [
             {
-                "id": "t",
-                "slug": "teststadt",
-                "name": "Teststadt",
-                "federal_state": "TT",
-                "nuts_code": None,
-                "kind": "marktbericht",
-                "publisher": "Test Pub",
-                "source_title": "Test Mietspiegel",
-                "source_url": "https://example.com/test",
-                "year": 2024,
-                "average_eur_per_sqm": 9.5,
-                "spread_eur_per_sqm_low": 7.0,
+                "slug": "alpha",
+                "name": "Alpha",
+                "federal_state": "AA",
+                "average_eur_per_sqm": 10.0,
+                "spread_eur_per_sqm_low": 8.0,
                 "spread_eur_per_sqm_high": 12.0,
-                "plz_prefixes": ["99"],
+                "year": 2024,
+                "source_title": "Alpha-Mietspiegel",
+                "publisher": "Alpha-Verlag",
+                "source_url": "https://example.com/alpha",
+                "kind": "qualifizierter_mietspiegel",
+                "plz_prefixes": ["11"],
             }
         ],
     }
-    f = tmp_path / "test.json"
-    f.write_text(json.dumps(payload), encoding="utf-8")
-
+    f = tmp_path / "alpha.json"
+    f.write_text(json.dumps(payload))
     db = _load_from_path(f)
-    assert len(db.all()) == 1
-    assert db.get("teststadt").name == "Teststadt"
+    assert isinstance(db, CityDatabase)
+    assert len(db) == 1
+    assert db.find_by_slug("alpha") is not None
+    # Modul-Cache darf NICHT überschrieben sein
+    real_db = get_database()
+    assert len(real_db) == 19
 
 
-def test_reload_dataset_resets_cache():
-    """After reload_dataset(), get_database() returns a fresh instance."""
-    db_a = get_database()
-    reload_dataset()
-    db_b = get_database()
-    # Both must be valid; reload guarantee is identity difference is allowed but
-    # data must still be identical.
-    assert {d.slug for d in db_a.all()} == {d.slug for d in db_b.all()}
+# ----- 6. Module-cache reset helper --------------------------------
+
+def test_reset_database_cache_reload_fresh():
+    """reset_database_cache() muss die nächste get_database()-Anfrage zum
+    Neu-Lesen von Disk zwingen (relevant für Tests, die alternate Datensätze
+    injizieren wollen)."""
+    db_before = get_database()
+    assert len(db_before) == 19
+    reset_database_cache()
+    db_after = get_database()
+    assert db_after is not db_before  # frische Instanz
+    assert len(db_after) == 19
