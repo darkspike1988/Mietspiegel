@@ -1,0 +1,62 @@
+services:
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    image: mietspiegel-ai-backend:latest
+    container_name: mietspiegel-backend
+    restart: unless-stopped
+    env_file:
+      - ../backend/.env
+    ports:
+      - "127.0.0.1:8000:8000"
+    networks:
+      - mietspiegel-net
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: mietspiegel-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - mietspiegel-net
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  # Optional: enable when REDIS_URL is set
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: mietspiegel-redis
+  #   restart: unless-stopped
+  #   command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+  #   networks:
+  #     - mietspiegel-net
+  #   volumes:
+  #     - redis_data:/data
+
+networks:
+  mietspiegel-net:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:
+  # redis_data:

@@ -1,0 +1,31 @@
+# Build output
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Tests
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Git
+.git/
+.gitignore
+
+# Docs (not needed in image)
+docs/
+*.md
+LICENSE
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Env files
+.env
+.env.local
+
+# Logs
+*.log

@@ -1,0 +1,52 @@
+# Caddyfile — Mietspiegel-AI Production
+# Replace `api.mietspiegel-ai.de` with your domain.
+
+api.mietspiegel-ai.de {
+    # Reverse proxy to FastAPI
+    reverse_proxy backend:8000 {
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # Security headers
+    header {
+        # HSTS — force HTTPS for 1 year
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        # Prevent MIME-sniffing
+        X-Content-Type-Options "nosniff"
+        # Clickjacking protection
+        X-Frame-Options "DENY"
+        # XSS protection (legacy)
+        X-XSS-Protection "1; mode=block"
+        # Referrer policy
+        Referrer-Policy "no-referrer"
+        # Permissions policy (disable unused features)
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+        # CORS — frontend only
+        # Note: backend also sets these, this is a belt-and-braces approach
+    }
+
+    # Rate limit at edge (basic protection)
+    # Note: Detailed rate limit lives in the backend (slowapi)
+    @rateLimited {
+        path /api/parse
+    }
+    # rate_limit @rateLimited 10r/m
+
+    # Logging
+    log {
+        output file /data/access.log {
+            roll_size 10mb
+            roll_keep 5
+        }
+    }
+
+    # Encode response
+    encode gzip zstd
+}
+
+# Redirect apex to www (optional)
+# mietspiegel-ai.de {
+#     redir https://api.mietspiegel-ai.de{uri}
+# }

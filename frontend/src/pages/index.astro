@@ -1,0 +1,30 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PdfUploader from "../components/PdfUploader.astro";
+---
+
+<Layout title="Mietspiegel-AI — Mietpreis auf ortsübliche Höhe prüfen">
+  <header>
+    <h1>🏠 Mietspiegel-AI</h1>
+    <p class="lede">
+      Lade deinen Mietvertrag hoch, prüfe Adresse &amp; Miete und erfahre,
+      ob deine Miete ortsüblich ist — lokal, selbstgehostet, DSGVO-konform.
+    </p>
+  </header>
+
+  <main>
+    <PdfUploader />
+  </main>
+
+  <footer>
+    <a href="/about">Über</a> · <a href="/datenschutz">Datenschutz</a> · <a href="/impressum">Impressum</a>
+    <br />
+    v0.1 · Backend: {import.meta.env.PUBLIC_BACKEND_URL ?? "localhost:8765"}
+  </footer>
+</Layout>
+
+<style>
+  h1 { text-align: center; padding: 2rem 1rem 0; color: var(--color-accent); margin: 0; }
+  .lede { text-align: center; color: var(--color-muted); max-width: 600px; margin: 0 auto 1rem; padding: 0 1rem; }
+  footer { text-align: center; padding: 2rem; color: #888; font-size: 0.85rem; }
+</style>

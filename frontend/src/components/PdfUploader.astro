@@ -1,0 +1,219 @@
+---
+/**
+ * PDF Uploader — Server-rendered Astro component, all interactivity lives in
+ * the inline <script> block. This keeps the build simple and avoids Astro 5
+ * client-island overhead for a single-page flow.
+ *
+ * Backend URL comes from PUBLIC_BACKEND_URL env (set in .env to your FastAPI host).
+ * Falls back to localhost:8765 for local dev.
+ */
+---
+
+<section class="uploader" id="uploader">
+  <h2>1. Mietvertrag hochladen (PDF)</h2>
+  <label class="dropzone" id="dropzone">
+    <input type="file" id="file-input" accept="application/pdf" />
+    <span>📄 PDF hier ablegen oder klicken zum Auswählen</span>
+  </label>
+  <p class="hint" id="filename" hidden></p>
+  <p class="error" id="error" hidden></p>
+
+  <div id="form-section" hidden>
+    <h2>2. Daten prüfen & korrigieren</h2>
+    <form id="lease-form">
+      <div class="grid">
+        <label>
+          Adresse
+          <input id="f-address" required />
+        </label>
+        <label>
+          Stadt
+          <input id="f-city" required />
+        </label>
+        <label>
+          Kaltmiete (€)
+          <input type="number" id="f-rent" step="0.01" required />
+        </label>
+        <label>
+          Wohnfläche (m²)
+          <input type="number" id="f-size" step="0.1" required />
+        </label>
+        <label>
+          Baujahr
+          <input type="number" id="f-year" />
+        </label>
+        <label>
+          Wohnlage
+          <select id="f-loc">
+            <option value="einfach">einfach</option>
+            <option value="mittel" selected>mittel</option>
+            <option value="gut">gut</option>
+          </select>
+        </label>
+      </div>
+      <button type="submit" id="submit-btn">Mietpreis prüfen</button>
+    </form>
+  </div>
+
+  <div id="result-section" hidden>
+    <h2>3. Ergebnis</h2>
+    <div class="result">
+      <div class="verdict">
+        <span class="badge" id="r-badge"></span>
+        <strong id="r-verdict"></strong>
+      </div>
+      <dl>
+        <dt>Verlangte Miete</dt><dd id="r-requested"></dd>
+        <dt>Faire ortsübliche Miete</dt><dd id="r-fair"></dd>
+        <dt>Abweichung</dt><dd id="r-delta"></dd>
+        <dt>Rechtsgrundlage</dt><dd id="r-law"></dd>
+        <dt>Quelle</dt><dd id="r-source"></dd>
+        <dt>Empfehlung</dt><dd id="r-rec"></dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<style>
+  .uploader { max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+  .dropzone {
+    display: block; padding: 2rem; border: 2px dashed #888; border-radius: 8px;
+    text-align: center; cursor: pointer; transition: border-color .2s;
+  }
+  .dropzone:hover { border-color: #0066cc; }
+  .dropzone input { display: none; }
+  .error { color: #b00020; padding: 0.75rem; background: #fee; border-radius: 4px; }
+  .hint { color: #666; font-size: 0.9rem; }
+  form { margin-top: 1.5rem; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  label { display: flex; flex-direction: column; font-size: 0.9rem; gap: 0.25rem; }
+  input, select { padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
+  button {
+    margin-top: 1.5rem; padding: 0.75rem 1.5rem; background: #0066cc; color: white;
+    border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;
+  }
+  button:disabled { background: #999; cursor: wait; }
+  .result { margin-top: 1rem; padding: 1.5rem; background: #f5f5f5; border-radius: 8px; }
+  .verdict { display: flex; align-items: center; gap: 0.5rem; font-size: 1.4rem; margin-bottom: 1rem; }
+  .badge { font-size: 1.8rem; }
+  dl { display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem 1rem; }
+  dt { font-weight: 600; }
+  dd { margin: 0; }
+</style>
+
+<script>
+  const BACKEND =
+    (import.meta.env.PUBLIC_BACKEND_URL as string | undefined) ??
+    "http://localhost:8765";
+
+  const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
+    const el = document.getElementById(id);
+    if (!el) throw new Error(`Element #${id} missing`);
+    return el as T;
+  };
+
+  const badgeFor = (v: string): string => {
+    switch (v) {
+      case "fair": return "✅";
+      case "tolerance": return "🟡";
+      case "brake": return "🟠";
+      case "wucher": return "🔴";
+      default: return "⚪";
+    }
+  };
+
+  const show = (id: string, visible: boolean): void => {
+    $(id).hidden = !visible;
+  };
+
+  const setError = (msg: string | null): void => {
+    const e = $("error");
+    if (msg) {
+      e.textContent = "⚠️ " + msg;
+      e.hidden = false;
+    } else {
+      e.hidden = true;
+      e.textContent = "";
+    }
+  };
+
+  const setBusy = (busy: boolean): void => {
+    const btn = $<HTMLButtonElement>("submit-btn");
+    btn.disabled = busy;
+    btn.textContent = busy ? "Prüfe…" : "Mietpreis prüfen";
+  };
+
+  const fileInput = $<HTMLInputElement>("file-input");
+  fileInput.addEventListener("change", () => {
+    const f = fileInput.files?.[0];
+    if (f) uploadPdf(f);
+  });
+
+  async function uploadPdf(file: File): Promise<void> {
+    setError(null);
+    $("filename").textContent = "📎 " + file.name;
+    show("filename", true);
+    const fd = new FormData();
+    fd.append("file", file);
+    try {
+      const r = await fetch(`${BACKEND}/api/parse`, { method: "POST", body: fd });
+      if (!r.ok) throw new Error(`HTTP ${r.status}: ${await r.text()}`);
+      const data = await r.json();
+      if (!data.ok || !data.parsed) {
+        throw new Error(data.error ?? "Backend lieferte keine Parse-Daten");
+      }
+      const p = data.parsed;
+      $<HTMLInputElement>("f-address").value = p.address ?? "";
+      $<HTMLInputElement>("f-city").value = p.city ?? "";
+      $<HTMLInputElement>("f-rent").value = String(p.cold_rent_eur ?? 0);
+      $<HTMLInputElement>("f-size").value = String(p.size_sqm ?? 0);
+      $<HTMLInputElement>("f-year").value = p.build_year ? String(p.build_year) : "";
+      const loc = (p.location_quality ?? "mittel").toLowerCase();
+      $<HTMLSelectElement>("f-loc").value =
+        loc === "einfach" || loc === "gut" ? loc : "mittel";
+      show("form-section", true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }
+
+  $("lease-form").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    setError(null);
+    setBusy(true);
+    show("result-section", false);
+    try {
+      const body = {
+        lease: {
+          address: $<HTMLInputElement>("f-address").value,
+          city: $<HTMLInputElement>("f-city").value,
+          cold_rent_eur: parseFloat($<HTMLInputElement>("f-rent").value),
+          size_sqm: parseFloat($<HTMLInputElement>("f-size").value),
+          build_year: parseInt($<HTMLInputElement>("f-year").value || "0") || null,
+          location_quality: $<HTMLSelectElement>("f-loc").value,
+          extras: [],
+        },
+      };
+      const r = await fetch(`${BACKEND}/api/check`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}: ${await r.text()}`);
+      const data = await r.json();
+      $("r-badge").textContent = badgeFor(data.verdict);
+      $("r-verdict").textContent = data.verdict.toUpperCase();
+      $("r-requested").textContent = data.requested_rent_eur.toFixed(2) + " €";
+      $("r-fair").textContent = data.fair_rent_eur.toFixed(2) + " €";
+      $("r-delta").textContent = data.delta_percent.toFixed(1) + " %";
+      $("r-law").textContent = data.legal_basis;
+      $("r-source").textContent = data.comparison.source;
+      $("r-rec").textContent = data.recommendation;
+      show("result-section", true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  });
+</script>

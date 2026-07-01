@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+
+# Node / Astro
+node_modules/
+dist/
+.astro/
+
+# Test cache
+.pytest_cache/
+
+# Build scripts (regenerated on demand)
+data/raw/
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets — must never go to git
+.env
+.env.local
+*.key
