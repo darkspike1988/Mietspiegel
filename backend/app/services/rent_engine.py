@@ -255,7 +255,13 @@ async def evaluate(req: RentCheckRequest) -> RentCheckResponse:
 # ----------------------------------------------------------------------
 
 def all_cities() -> list[dict]:
-    """Return all datasets as plain dicts (matches old CityRecord shape)."""
+    """Return all datasets as plain dicts including full source attribution.
+
+    Each entry exposes publisher, source_url, year, kind, and the
+    ortsübliche spread (low/high €/m²) so the frontend can render
+    source attribution links next to the verdict (transparency for
+    legal defensibility — §558d BGB / §5 WiStrG).
+    """
     db = get_database()
     return [
         {
@@ -266,7 +272,10 @@ def all_cities() -> list[dict]:
             "source": f"{ds.source_title} ({ds.year}) — {ds.publisher}",
             "year": ds.year,
             "kind": ds.kind,
+            "publisher": ds.publisher,
             "source_url": ds.source_url,
+            "spread_eur_per_sqm_low": ds.spread_eur_per_sqm_low,
+            "spread_eur_per_sqm_high": ds.spread_eur_per_sqm_high,
             "reference_size_sqm": 65.0,
         }
         for ds in db.all()
