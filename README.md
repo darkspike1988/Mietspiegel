@@ -1,3 +1,5 @@
+> **Projektstatus (28.09.2026):** Die aktive Entwicklung von Web-App und API wurde im privaten Repository `darkspike1988/mietspiegel-app` zusammengeführt. Dieses öffentliche Repository bleibt als bisheriger Quellstand und für seine Versionsgeschichte bestehen.
+
 # Mietspiegel-AI
 
 Lokaler, DSGVO-konformer Mietpreis-Check mit Widerspruchsgenerator. Lade deinen
