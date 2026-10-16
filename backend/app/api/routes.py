@@ -28,6 +28,8 @@ from app.schemas.contracts import (
 from app.schemas.tools import (
     KautionCheckRequest,
     KautionCheckResponse,
+    KautionsVergleichRequest,
+    KautionsVergleichResponse,
     MieterhoehungCheckRequest,
     MieterhoehungCheckResponse,
     NebenkostenCheckRequest,
@@ -211,3 +213,10 @@ async def tool_mieterhoehung(
     req: MieterhoehungCheckRequest,
 ) -> MieterhoehungCheckResponse:
     return tools_engine.check_mieterhoehung(req)
+
+
+@api_router.post("/tools/kaution/vergleich", response_model=KautionsVergleichResponse)
+async def tool_kaution_vergleich(
+    req: KautionsVergleichRequest,
+) -> KautionsVergleichResponse:
+    return tools_engine.compare_kaution(req)

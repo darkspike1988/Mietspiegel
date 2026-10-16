@@ -12,11 +12,17 @@ hallucination risk, no API key required, free to use.
 """
 from __future__ import annotations
 
+import json
 from datetime import date
+from pathlib import Path
 
 from app.schemas.tools import (
     KautionCheckRequest,
     KautionCheckResponse,
+    Kautionsanbieter,
+    KautionsAngebot,
+    KautionsVergleichRequest,
+    KautionsVergleichResponse,
     MieterhoehungCheckRequest,
     MieterhoehungCheckResponse,
     NebenkostenCheckRequest,
@@ -352,4 +358,71 @@ def check_mieterhoehung(req: MieterhoehungCheckRequest) -> MieterhoehungCheckRes
         formal_notice_hint=formal_notice_hint,
         findings=findings,
         recommendation=recommendation,
+    )
+
+# ----------------------------------------------------------------------
+# Kautionsanbieter-Vergleich (Daten: data/processed/kautionsanbieter.json)
+# ----------------------------------------------------------------------
+
+_KAUTION_DATA_PATH = (
+    Path(__file__).resolve().parent.parent.parent.parent
+    / "data"
+    / "processed"
+    / "kautionsanbieter.json"
+)
+_kaution_cache: dict | None = None
+
+
+def _load_providers() -> tuple[list[Kautionsanbieter], str]:
+    global _kaution_cache
+    if _kaution_cache is None:
+        raw = json.loads(_KAUTION_DATA_PATH.read_text(encoding="utf-8"))
+        _kaution_cache = raw
+    raw = _kaution_cache
+    providers = [Kautionsanbieter.model_validate(p) for p in raw["providers"]]  # type: ignore[index]
+    return providers, str(raw["generated_at"])  # type: ignore[index]
+
+
+def compare_kaution(req: KautionsVergleichRequest) -> KautionsVergleichResponse:
+    """Vergleich aller Mietkautionsbürgschaft-Anbieter für eine Kautionssumme.
+
+    Hinweis: Eine Bürgschaft kostet jährlich Geld und kommt nie zurück —
+    sie löst ein Liquiditätsproblem, kein Kostenproblem. Der Vergleich
+    zeigt deshalb auch, wie viel Kapital gebunden bleibt.
+    """
+    providers, updated_at = _load_providers()
+    offers: list[KautionsAngebot] = []
+    for p in providers:
+        if p.max_deposit_eur is not None and req.deposit_eur > p.max_deposit_eur:
+            continue
+        fee = round(req.deposit_eur * p.percent_per_year / 100, 2)
+        if p.min_fee_eur_per_year is not None:
+            fee = round(max(fee, p.min_fee_eur_per_year), 2)
+        offers.append(KautionsAngebot(
+            provider=p,
+            fee_eur_per_year=fee,
+            total_cost_eur=round(fee * req.years, 2),
+            blocked_capital_eur=0.0,
+            note=(
+                f"Ab {p.percent_per_year:.1f}% p.a."
+                + (f", mind. {p.min_fee_eur_per_year:.0f} EUR" if p.min_fee_eur_per_year else "")
+                + f" · Bonität via {p.bonitaet_check}"
+            ),
+        ))
+    offers.sort(key=lambda o: o.total_cost_eur)
+    cheapest = offers[0].total_cost_eur if offers else 0.0
+    most_expensive = offers[-1].total_cost_eur if offers else 0.0
+    return KautionsVergleichResponse(
+        deposit_eur=req.deposit_eur,
+        years=req.years,
+        offers=offers,
+        cheapest_offer_eur=cheapest,
+        savings_vs_most_expensive_eur=round(most_expensive - cheapest, 2),
+        dataset_updated_at=updated_at,
+        disclaimer=(
+            "Anbieterangaben ohne Gewähr; kein vollständiger Marktüberblick. "
+            "Vor Abschluss immer die aktuelle Preisliste des Anbieters prüfen. "
+            "Eine Bürgschaft bindet kein Kapital, kostet aber jährlich — "
+            "bei verfügbarer Liquidität ist das klassische Kautionskonto meist günstiger."
+        ),
     )

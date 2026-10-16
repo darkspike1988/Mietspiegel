@@ -1,0 +1,92 @@
+{
+  "$schema": "https://mietspiegel-ai.local/schemas/kautionsanbieter-v1.json",
+  "generated_at": "2026-10-16",
+  "update_cycle": "quartalsweise",
+  "$comment": "Anbieterangaben für Mietkautionsbürgschaften (Kautionsschutzbrief). Preise = Prozent der Kautionssumme pro Jahr, meist mit Mindestbeitrag. Quelle der Marktübersicht: mietkautionskonto.info (Anbieterangaben zuletzt geprüft September 2026). Kein vollständiger Marktüberblick — vor Abschluss immer die aktuelle Preisliste des Anbieters prüfen.",
+  "providers": [
+    {
+      "id": "heysafe-axa",
+      "name": "heysafe (AXA)",
+      "percent_per_year": 3.9,
+      "min_fee_eur_per_year": null,
+      "max_deposit_eur": null,
+      "risk_carrier": "AXA",
+      "bonitaet_check": "nicht veröffentlicht",
+      "pays_on_first_demand": false,
+      "notes": "Digital, laut Anbieter ab 3,9 % der Kautionssumme.",
+      "source_url": "https://mietkautionskonto.info/mietkautionsbuergschaft/"
+    },
+    {
+      "id": "inzmo-baloise",
+      "name": "INZMO (Baloise)",
+      "percent_per_year": 4.3,
+      "min_fee_eur_per_year": 40,
+      "max_deposit_eur": 10000,
+      "risk_carrier": "Baloise",
+      "bonitaet_check": "nicht veröffentlicht",
+      "pays_on_first_demand": false,
+      "notes": "Mietkautions-Police der Baloise, komplett digital.",
+      "source_url": "https://inzmo.com/"
+    },
+    {
+      "id": "helvetia",
+      "name": "Helvetia",
+      "percent_per_year": 4.3,
+      "min_fee_eur_per_year": 39,
+      "max_deposit_eur": 10000,
+      "risk_carrier": "Helvetia",
+      "bonitaet_check": "nicht veröffentlicht",
+      "pays_on_first_demand": false,
+      "notes": "Nur 39 EUR Mindestbeitrag, max. 10.000 EUR Kaution.",
+      "source_url": "https://mietkautionskonto.info/mietkautionsbuergschaft/"
+    },
+    {
+      "id": "kautionsfrei-basler",
+      "name": "kautionsfrei (Basler/Baloise)",
+      "percent_per_year": 4.7,
+      "min_fee_eur_per_year": 45,
+      "max_deposit_eur": null,
+      "risk_carrier": "Basler (heute Baloise)",
+      "bonitaet_check": "Infoscore",
+      "pays_on_first_demand": false,
+      "notes": "Vier Wochen Einspruchsfrist, falls der Vermieter die Kaution anfordert.",
+      "source_url": "https://kautionsfrei.de/"
+    },
+    {
+      "id": "allianz-dkk",
+      "name": "Allianz (via Deutsche Kautionskasse)",
+      "percent_per_year": 4.7,
+      "min_fee_eur_per_year": 50,
+      "max_deposit_eur": null,
+      "risk_carrier": "Allianz",
+      "bonitaet_check": "SCHUFA",
+      "pays_on_first_demand": false,
+      "notes": "Moneyfix-Produkt der Deutschen Kautionskasse.",
+      "source_url": "https://www.deutsche-kautionskasse.de/"
+    },
+    {
+      "id": "kautel-rv",
+      "name": "Kautel (R+V / cresult)",
+      "percent_per_year": 4.7,
+      "min_fee_eur_per_year": null,
+      "max_deposit_eur": null,
+      "risk_carrier": "R+V",
+      "bonitaet_check": "Infoscore",
+      "pays_on_first_demand": false,
+      "notes": "Ab 4,7 % der Kautionssumme.",
+      "source_url": "https://mietkautionskonto.info/mietkautionsbuergschaft/"
+    },
+    {
+      "id": "sv-sparkassenversicherung",
+      "name": "SV SparkassenVersicherung",
+      "percent_per_year": 4.9,
+      "min_fee_eur_per_year": null,
+      "max_deposit_eur": null,
+      "risk_carrier": "SV SparkassenVersicherung",
+      "bonitaet_check": "SCHUFA",
+      "pays_on_first_demand": false,
+      "notes": "Vertrieb über Sparkassen und ImmoScout24, Abwicklung via Deutsche Kautionskasse.",
+      "source_url": "https://mietkautionskonto.info/mietkautionsbuergschaft/"
+    }
+  ]
+}

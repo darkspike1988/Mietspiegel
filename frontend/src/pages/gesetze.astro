@@ -1,0 +1,190 @@
+---
+/**
+ * Gesetze & Politik — schematische Übersicht: Welche Gesetze schützen Mieter,
+ * und auf welcher Ebene (Bund / Land / Kreis & Stadt) wird daran gearbeitet?
+ */
+import Layout from "../layouts/Layout.astro";
+import Donate from "../components/Donate.astro";
+---
+<Layout title="Gesetze & Politik: Mieterschutz auf Bund-, Landes- und kommunaler Ebene">
+  <header>
+    <h1>⚖️ Gesetze & Politik zum Schutz von Mietern</h1>
+    <p class="lede">
+      Welche Gesetze schützen dich — und wer beschließt sie? Schematisch
+      aufbereitet: Bund, Länder, Kommunen. Mit Links zu den Original-Texten.
+    </p>
+  </header>
+
+  <main class="gesetze">
+    <!-- Schema: Bund -->
+    <section>
+      <h2>🏛️ Bundesebene (Bundesrecht)</h2>
+      <p class="hint">
+        Das Mietrecht ist im Wesentlichen <strong>Bundesrecht</strong> —
+        kodifiziert im BGB. Der Bundestag beschließt Änderungen; die
+        Länder können über die Wohnraummietpreisbremse per Landesverordnung
+        bestimmte Gemeinden ausweisen ("angespannter Wohnungsmarkt").
+      </p>
+      <table>
+        <tr><th>Norm</th><th>Schützt vor / regelt</th><th>Link</th></tr>
+        <tr>
+          <td>§ 556d + § 556g BGB</td>
+          <td><strong>Mietpreisbremse</strong>: Bei Neuvermietung max. 10 % über ortsüblicher Vergleichsmiete; Rückforderung überzahlter Miete; Auskunftsanspruch des Mieters</td>
+          <td><a href="https://www.gesetze-im-internet.de/bgb/__556d.html" target="_blank" rel="noopener noreferrer">§556d</a></td>
+        </tr>
+        <tr>
+          <td>§ 558 BGB</td>
+          <td><strong>Mieterhöhung bei Bestandsmieten</strong>: max. 15 % in 3 Jahren (Kappungsgrenze), 15-Monats-Sperrfrist</td>
+          <td><a href="https://www.gesetze-im-internet.de/bgb/__558.html" target="_blank" rel="noopener noreferrer">§558</a></td>
+        </tr>
+        <tr>
+          <td>§ 551 BGB</td>
+          <td><strong>Kaution</strong>: max. 3 Monatsmieten, verzinst anzulegen, in 3 Raten zahlbar</td>
+          <td><a href="https://www.gesetze-im-internet.de/bgb/__551.html" target="_blank" rel="noopener noreferrer">§551</a></td>
+        </tr>
+        <tr>
+          <td>§ 556 BGB + BetrKV</td>
+          <td><strong>Nebenkosten</strong>: Umlage nur bei Vereinbarung, Abrechnung binnen 12 Monaten, Belegeinsicht (§ 259 BGB)</td>
+          <td><a href="https://www.gesetze-im-internet.de/betrkv/" target="_blank" rel="noopener noreferrer">BetrKV</a></td>
+        </tr>
+        <tr>
+          <td>§ 5 WiStrG</td>
+          <td><strong>Mietwucher</strong> (strafbar): Miete ≥ 50 % über ortsüblich, bei Ausnutzung einer Zwangslage</td>
+          <td><a href="https://www.gesetze-im-internet.de/wistr_g/__5.html" target="_blank" rel="noopener noreferrer">§5 WiStrG</a></td>
+        </tr>
+        <tr>
+          <td>§ 535 ff. BGB</td>
+          <td><strong>Instandhaltungspflicht</strong> des Vermieters, Mietminderung bei Mängeln (§ 536 BGB)</td>
+          <td><a href="https://www.gesetze-im-internet.de/bgb/__536.html" target="_blank" rel="noopener noreferrer">§536</a></td>
+        </tr>
+        <tr>
+          <td>§ 573 BGB</td>
+          <td><strong>Kündigungsschutz</strong>: Kündigung nur bei berechtigtem Interesse, Verwandtenprivileg</td>
+          <td><a href="https://www.gesetze-im-internet.de/bgb/__573.html" target="_blank" rel="noopener noreferrer">§573</a></td>
+        </tr>
+      </table>
+    </section>
+
+    <!-- Schema: Land -->
+    <section>
+      <h2>🗺️ Landesebene (Landesrecht & Landesverordnungen)</h2>
+      <p class="hint">
+        Die Länder beschließen <strong>WoG-Verordnungen</strong>: Sie weisen
+        per Rechtsverordnung die Gemeinden mit "angespanntem Wohnungsmarkt"
+        aus — erst dadurch gilt dort die Mietpreisbremse (§ 556d Abs. 2 BGB).
+        Frist: max. 5 Jahre, muss erneuert werden.
+      </p>
+      <ul>
+        <li>
+          <strong>Beispiel Berlin</strong>: Ausweisung per Landesverordnung
+          (ganz Berlin = angespannter Markt). Quelle:
+          <a href="https://www.berlin.de/sen/wohnen/service/mietspiegel/" target="_blank" rel="noopener noreferrer">
+            Berliner Mietspiegel (Senatsverwaltung)</a>
+        </li>
+        <li>
+          <strong>Beispiel NRW</strong>: Kölner und Düsseldorfer Wohnraum
+          per Verordnung des Landes NRW als angespannt ausgewiesen
+          (<a href="https://www.boris.nrw.de/" target="_blank" rel="noopener noreferrer">BORIS.NRW</a>)
+        </li>
+        <li>
+          <strong>Beispiel Bayern</strong>: München & Umland per
+          Landesverordnung, Mietspiegel der Landeshauptstadt
+          (<a href="https://www.muenchen.de/mietspiegel" target="_blank" rel="noopener noreferrer">Münchner Mietspiegel</a>)
+        </li>
+      </ul>
+      <p class="hint">
+        Diese App nutzt exakt diese Mietspiegel als Datenbasis (siehe
+        <a href="/">Städte-Daten</a> mit Quelle &amp; Jahr pro Datensatz).
+      </p>
+    </section>
+
+    <!-- Schema: Kommune -->
+    <section>
+      <h2>🏙️ Kommunale Ebene (Stadt & Kreis)</h2>
+      <p class="hint">
+        Städte und Kreise erstellen die <strong>Mietspiegel</strong> selbst
+        (meist alle 2 Jahre, qualifiziert nach § 558d BGB oder "einfach") und
+        beschließen lokale Schutzinstrumente:
+      </p>
+      <table>
+        <tr><th>Instrument</th><th>Beschlossen von</th><th>Beispiel-Link</th></tr>
+        <tr>
+          <td>Qualifizierter Mietspiegel (§ 558d BGB)</td>
+          <td>Stadt / Interessenvertretung von Mietern &amp; Vermietern</td>
+          <td><a href="https://www.berlin.de/sen/wohnen/service/mietspiegel/" target="_blank" rel="noopener noreferrer">Berlin</a> ·
+              <a href="https://www.hamburg.de/mietspiegel" target="_blank" rel="noopener noreferrer">Hamburg</a> ·
+              <a href="https://www.muenchen.de/mietspiegel" target="_blank" rel="noopener noreferrer">München</a></td>
+        </tr>
+        <tr>
+          <td>Vorkaufsrecht der Gemeinde (§ 24 ff. BauGB)</td>
+          <td>Stadt</td>
+          <td>Schützt vor Verkauf an Großinvestoren, Wohnung wird in
+              öffentliche Hand übernommen</td>
+        </tr>
+        <tr>
+          <td>Milieuschutz / Erhaltungssatzung</td>
+          <td>Stadt (Bezirksversammlung / Stadtrat)</td>
+          <td>Verhindert Luxus-Modernisierung & Aufkauf in definierten Gebieten</td>
+        </tr>
+        <tr>
+          <td>Zweckentfremdungsverbot (Wohnraumkappungsgesetz)</td>
+          <td>Stadt (Land in Berlin)</td>
+          <td>Begrenzt Umwandlung von Wohnraum in Ferienwohnungen/Büros</td>
+        </tr>
+      </table>
+    </section>
+
+    <!-- Zusammenfassung als Schema -->
+    <section>
+      <h2>🧩 Schema: Wer beschließt was?</h2>
+      <pre class="schema">
+BUNDESEBENE (Bundestag + Bundesrat)
+│  BGB (§§ 535–580a), WiStrG, BauGB
+│  → Mietpreisbremse-Rahmen, Kappung, Kaution, NK, Kündigungsschutz
+│
+├── LANDESEBENE (Landtag + Landesregierung)
+│  │  Landesverordnung "angespannter Wohnungsmarkt"
+│  │  → aktiviert §556d BGB in ausgewählten Gemeinden
+│  │
+│  └── KOMMUNALE EBENE (Stadtrat / Kreistag)
+│     │  Mietspiegel (§558d), Erhaltungssatzungen,
+│     │  Vorkaufsrecht, Zweckentfremdungsverbot
+│     └→ konkretisierte Datenbasis für deine Mietpreis-Prüfung
+      </pre>
+      <p class="hint">
+        Genau diese Datenbasis (Städte-Mietspiegel mit Quelle, Jahr, URL)
+        steckt in <code>data/processed/germany_cities.json</code>.
+      </p>
+    </section>
+
+    <Donate />
+  </main>
+
+  <footer>
+    <a href="/">← Mietpreis-Check</a> ·
+    <a href="/werkzeuge">Werkzeuge</a> ·
+    <a href="/handbuch">Handbuch</a>
+  </footer>
+</Layout>
+
+<style>
+  h1 { text-align: center; padding: 2rem 1rem 0; color: var(--color-accent); margin: 0; }
+  .lede { text-align: center; color: var(--color-muted); max-width: 680px; margin: 0 auto 2rem; padding: 0 1rem; }
+  .gesetze { max-width: 820px; margin: 0 auto 3rem; padding: 0 1rem; }
+  section { margin-bottom: 2.5rem; }
+  h2 { border-bottom: 2px solid #e0e0e0; padding-bottom: 0.4rem; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95rem; }
+  th, td { border: 1px solid #ddd; padding: 0.6rem; text-align: left; vertical-align: top; }
+  th { background: #f2f2f2; }
+  .hint { color: #666; font-size: 0.88rem; }
+  .schema {
+    background: #f6f8fa;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 1.2rem;
+    font-size: 0.85rem;
+    overflow-x: auto;
+    line-height: 1.5;
+  }
+  footer { text-align: center; padding: 2rem; color: #888; font-size: 0.85rem; }
+</style>

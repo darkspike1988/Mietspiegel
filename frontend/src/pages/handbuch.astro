@@ -1,0 +1,247 @@
+---
+/**
+ * Handbuch für Mietwucher & Klage-Strategie — statischer Ratgeber mit Quellen,
+ * eingebetteten YouTube-Erklärvideos und Verweisen auf Open-Source-Tools.
+ */
+import Layout from "../layouts/Layout.astro";
+import Donate from "../components/Donate.astro";
+---
+<Layout title="Handbuch: Mietwucher erkennen & richtig vorgehen">
+  <header>
+    <h1>📕 Handbuch: Mietwucher erkennen & richtig vorgehen</h1>
+    <p class="lede">
+      Einfach erklärt, Schritt für Schritt — mit Quellen, Videos und
+      echten Open-Source-Tools. Keine Rechtsberatung, aber ein solcher
+      Fahrplan für deinen Fall.
+    </p>
+  </header>
+
+  <main class="handbuch">
+    <!-- Teil 1: Was ist Mietwucher -->
+    <section id="wucher">
+      <h2>1. Was ist Mietwucher?</h2>
+      <p>
+        <strong>Wucher</strong> liegt vor, wenn die Miete die ortsübliche
+        Vergleichsmiete um <strong>50 % oder mehr</strong> übersteigt
+        (§ 5 WiStrG — even strafbar für den Vermieter). Die
+        <strong>Mietpreisbremse</strong> (§ 556d BGB) greift schon ab
+        <strong>10 % Überhöhung</strong> in angespannten Wohnungsmärkten
+        und gilt für Neuvermietungen ab 2015.
+      </p>
+      <table>
+        <tr><th>Abweichung</th><th>Einstufung</th><th>Norm</th></tr>
+        <tr><td>≤ 10 %</td><td>ortsüblich</td><td>§ 558 BGB</td></tr>
+        <tr><td>≤ 20 %</td><td>Toleranzbereich</td><td>§ 558 Abs. 2 BGB</td></tr>
+        <tr><td>≤ 50 %</td><td>Mietpreisbremse verletzt</td><td>§ 556d i.V.m. § 556g BGB</td></tr>
+        <tr><td>&gt; 50 %</td><td><strong>Wucher</strong></td><td>§ 5 WiStrG</td></tr>
+      </table>
+      <p class="hint">
+        Prüfe deine eigene Miete mit dem <a href="/">Mietpreis-Check</a> in dieser App.
+      </p>
+    </section>
+
+    <!-- Teil 2: YouTube -->
+    <section id="videos">
+      <h2>2. Einfach erklärt in Videos</h2>
+      <div class="video-grid">
+        <div class="video">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/ObsYDVDhDEs"
+            title="Die Mietpreisbremse leicht erklärt mit Beispielrechnung"
+            loading="lazy"
+            allowfullscreen></iframe>
+          <p>Mietpreisbremse mit Beispielrechnung</p>
+        </div>
+        <div class="video">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/7ff8FuBBuG8"
+            title="Mietpreisbremse in 3 Minuten erklärt"
+            loading="lazy"
+            allowfullscreen></iframe>
+          <p>Mietpreisbremse in 3 Minuten</p>
+        </div>
+        <div class="video">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/XUwJdYwwvUo"
+            title="Die Mietpreisbremse soll Wucher stoppen — doch es gibt Schlupflöcher"
+            loading="lazy"
+            allowfullscreen></iframe>
+          <p>Wucher & Schlupflöcher (extra 3)</p>
+        </div>
+        <div class="video">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/q6oYe5o4oD8"
+            title="Deutscher Mieterbund will vor Mietwucher schützen"
+            loading="lazy"
+            allowfullscreen></iframe>
+          <p>Mieterbund zum Schutz vor Mietwucher</p>
+        </div>
+      </div>
+      <p class="hint">
+        Eingebettet über youtube-nocookie.com (Datenschutz-freundlicher
+        "erweiterte Datenschutzmodus"-Embed).
+      </p>
+    </section>
+
+    <!-- Teil 3: Klage-Leitfaden -->
+    <section id="klage">
+      <h2>3. Wie du am besten vorgehst — Schritt für Schritt</h2>
+      <ol class="steps">
+        <li>
+          <strong>Beweise sichern</strong>: Mietvertrag, Mieterhöhungsschreiben,
+          Mietspiegel deiner Stadt (Download-Link via <a href="/werkzeuge">Städte-Daten</a>),
+          Fotos, Schriftverkehr. Alles schriftlich, alles mit Datum.
+        </li>
+        <li>
+          <strong>Miete prüfen</strong> mit dem <a href="/">Mietpreis-Check</a>:
+          Ergebnis speichern (Screenshot/JSON) — die Quelle (Mietspiegel, Jahr,
+          Herausgeber) ist zitierfähig und wird im Widerspruch genannt.
+        </li>
+        <li>
+          <strong>Vermieter um Auskunft bitten</strong>: Bei Bestandsmieten
+          kannst du nach § 556g Abs. 3 BGB Auskunft über die Berechnung der
+          Vergleichsmiete verlangen.
+        </li>
+        <li>
+          <strong>Widerspruch schreiben</strong>: Nutze den
+          Widerspruchsgenerator dieser App — oder die
+          <a href="https://www.mieterbund.de/musterbriefe.html" target="_blank" rel="noopener noreferrer">
+            Musterbriefe des Deutschen Mieterbunds</a>.
+          </li>
+        <li>
+          <strong>Mieterverein beitreten</strong>: Mitgliedschaft ~100 €/Jahr,
+          inkl. Beratung und außergerichtlicher Vertretung. Such deinen
+          <a href="https://www.mieterbund.de/bundesverband/der-dmb/vor-ort-beim-mieterverein.html" target="_blank" rel="noopener noreferrer">
+            örtlichen Mieterverein</a>. Das ist meist der günstigste und
+          effektivste Weg.
+        </li>
+        <li>
+          <strong>Zurückzahlung fordern (§ 556d + Kappung)</strong>: Bei
+          erfolgreicher Mietpreisbremsen-Anwendung kannst du die Überzahlung
+          der letzten Monate zurückfordern (Ausschlussfrist beachten —
+          Rückforderung muss innerhalb von 3 Jahren nach Zahlung geltend
+          gemacht werden).
+        </li>
+        <li>
+          <strong>Gericht</strong>: Erst wenn Widerspruch + Mieterverein nichts
+          erreichen: Mietprozess beim zuständigen Amtsgericht (Wohnraum =
+          Wohnungsmiete-Mietprozess, Gericht am Ort der Wohnung).
+          Ohne Anwalt bis zum Amtsgericht möglich (kein Anwaltszwang am AG);
+          Gerichtskosten richten sich nach dem Streitwert.
+        </li>
+      </ol>
+      <p class="hint">
+        Vor Gericht zählt: <em> sachliche Argumentation mit Belegen</em>.
+        Genau deshalb zeigt diese App bei jedem Verdict die Datenquelle.
+      </p>
+    </section>
+
+    <!-- Teil 4: Maschen großer Konzerne -->
+    <section id="maschen">
+      <h2>4. Maschen großer Wohnungskonzerne — und was dagegen hilft</h2>
+      <table>
+        <tr><th>Masche</th><th>Erkennungszeichen</th><th>Gegenmittel</th></tr>
+        <tr>
+          <td><strong>Modernisierungs-Mieterhöhung</strong> (§ 559 BGB)</td>
+          <td>"Wir haben das Treppenhaus renoviert" + 8-15 % auf die Miete</td>
+          <td>Nur echte Modernisierung (nicht Reparatur!) darf umgelegt werden —
+              Umlage auf 3 Jahre verteilt, Kappungsgrenze beachten.
+              Positionen im <a href="/werkzeuge">Nebenkosten-Check</a> prüfen.</td>
+        </tr>
+        <tr>
+          <td><strong>Mietpreisbremse umgehen</strong> durch "optische Aufwertung"</td>
+          <td>Neuvermietung als "renovierte Designerwohnung" deutlich über Mietspiegel</td>
+          <td>Auch nach Renovierung gilt die Mietpreisbremse —
+              hier hilft nur prüfen (Mietpreis-Check) und Widerspruch.</td>
+        </tr>
+        <tr>
+          <td><strong>Indexmiete / Staffelmiete</strong> als Falle</td>
+          <td>Vertrag mit automat. Erhöhungen, oft über 15 % über mehreren Jahren</td>
+          <td>Indexmiete ist legal — aber § 556d gilt dann nicht. Prüfe
+              Erhöhungen mit dem <a href="/werkzeuge">Mieterhöhung-Check</a>
+              und vergleiche die Ausgangsmiete mit dem Mietspiegel.</td>
+        </tr>
+        <tr>
+          <td><strong>Umgehung der Kappungsgrenze</strong></td>
+          <td>Mieterhöhung weit über 15 % in 3 Jahren</td>
+          <td>Kappungsgrenze (§ 558 Abs. 3 BGB) ist absolut —
+              <a href="/werkzeuge">Mieterhöhung-Check</a> nutzen und widersprechen.</td>
+        </tr>
+        <tr>
+          <td><strong>Nebenkosten-Abrechnung mit "Extras"</strong></td>
+          <td>Unbekannte Kostenarten (Verwaltung, Reparatur) erscheinen plötzlich</td>
+          <td>Nicht umlagefähige Positionen sind unzulässig —
+              <a href="/werkzeuge">Nebenkosten-Check</a> mit Belegen abgleichen.</td>
+        </tr>
+      </table>
+    </section>
+
+    <!-- Teil 5: Quellen -->
+    <section id="quellen">
+      <h2>5. Quellen & weiterführende Links</h2>
+      <ul>
+        <li>
+          <a href="https://www.mieterbund.de/" target="_blank" rel="noopener noreferrer">
+            Deutscher Mieterbund</a> — Musterbriefe, Rechtstipps, Mieterschutz
+        </li>
+        <li>
+          <a href="https://www.gesetze-im-internet.de/bgb/" target="_blank" rel="noopener noreferrer">
+            BGB im Volltext</a> — §§ 535-580a (Mietrecht), § 556d/556g (Mietpreisbremse)
+        </li>
+        <li>
+          <a href="https://www.gesetze-im-internet.de/wistr_g/" target="_blank" rel="noopener noreferrer">
+            WiStrG</a> — § 5 Mietwucher (strafbar)
+        </li>
+        <li>
+          <a href="https://www.stiftung-warentest.de/thema/finanzen-vorsorgen/mietpreise" target="_blank" rel="noopener noreferrer">
+            Stiftung Warentest: Miete</a> — unabhängige Analysen
+        </li>
+      </ul>
+    </section>
+
+    <!-- Teil 6: Open-Source-Tools -->
+    <section id="tools">
+      <h2>6. Andere Open-Source-Tools, die dir helfen</h2>
+      <ul>
+        <li>
+          <a href="https://github.com/neopostmodern/wohnungsbot" target="_blank" rel="noopener noreferrer">
+            🏠 Wohnungsbot</a> (AGPL-3.0) — automatisiert die Wohnungssuche auf
+          Immobilienportalen, ein freies Projekt gegen den Mietenwahnsinn.
+        </li>
+        <li>
+          <a href="https://github.com/darkspike1988/Mietspiegel" target="_blank" rel="noopener noreferrer">
+            🛠️ Diese App (Mietspiegel-AI)</a> — selbst hosten, verbessern, forken.
+          </li>
+      </ul>
+      <p class="hint">
+        Kennst du weitere freie Mieter-Tools? Öffne gern ein Issue im Repo.
+      </p>
+    </section>
+
+    <Donate />
+  </main>
+
+  <footer>
+    <a href="/">← Mietpreis-Check</a> ·
+    <a href="/werkzeuge">Werkzeuge</a> ·
+    <a href="/gesetze">Gesetze & Politik</a>
+  </footer>
+</Layout>
+
+<style>
+  h1 { text-align: center; padding: 2rem 1rem 0; color: var(--color-accent); margin: 0; }
+  .lede { text-align: center; color: var(--color-muted); max-width: 680px; margin: 0 auto 2rem; padding: 0 1rem; }
+  .handbuch { max-width: 780px; margin: 0 auto 3rem; padding: 0 1rem; }
+  section { margin-bottom: 2.5rem; }
+  h2 { border-bottom: 2px solid #e0e0e0; padding-bottom: 0.4rem; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95rem; }
+  th, td { border: 1px solid #ddd; padding: 0.6rem; text-align: left; vertical-align: top; }
+  th { background: #f2f2f2; }
+  .hint { color: #666; font-size: 0.88rem; }
+  .video-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .video iframe { width: 100%; aspect-ratio: 16/9; border: none; border-radius: 8px; }
+  .video p { text-align: center; font-size: 0.88rem; color: #444; margin: 0.4rem 0 0; }
+  .steps li { margin-bottom: 0.9rem; line-height: 1.5; }
+  footer { text-align: center; padding: 2rem; color: #888; font-size: 0.85rem; }
+  @media (max-width: 640px) { .video-grid { grid-template-columns: 1fr; } }
+</style>

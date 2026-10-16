@@ -195,3 +195,52 @@ __all__ = [
     "MieterhoehungCheckResponse",
     "NOT_ALLOCATION_CAPABLE",
 ]
+
+
+# ----------------------------------------------------------------------
+# Kautionsanbieter-Vergleich (/api/tools/kaution/vergleich)
+# ----------------------------------------------------------------------
+
+class Kautionsanbieter(BaseModel):
+    """Ein Mietkautionsbürgschaft-Anbieter (Kautionsschutzbrief)."""
+    id: str
+    name: str
+    percent_per_year: float = Field(..., ge=0, le=20, description="% der Kautionssumme p.a.")
+    min_fee_eur_per_year: float | None = Field(None, ge=0)
+    max_deposit_eur: float | None = Field(None, ge=0)
+    risk_carrier: str = Field(..., description="Versicherer im Hintergrund")
+    bonitaet_check: str = Field(..., description="SCHUFA | Infoscore | nicht veröffentlicht")
+    pays_on_first_demand: bool = Field(False, description="Zahlt auf erstes Anfordern")
+    notes: str = ""
+    source_url: str
+
+
+class KautionsVergleichRequest(BaseModel):
+    deposit_eur: float = Field(..., gt=0, le=100000, description="Kautionssumme")
+    years: int = Field(1, ge=1, le=30, description="Voraussichtliche Mietdauer in Jahren")
+
+
+class KautionsAngebot(BaseModel):
+    """Berechnetes Angebot eines Anbieters."""
+    provider: Kautionsanbieter
+    fee_eur_per_year: float
+    total_cost_eur: float
+    blocked_capital_eur: float
+    note: str | None = None
+
+
+class KautionsVergleichResponse(BaseModel):
+    ok: bool = True
+    deposit_eur: float
+    years: int
+    offers: list[KautionsAngebot] = Field(..., description="Nach Gesamtkosten sortiert")
+    cheapest_offer_eur: float
+    savings_vs_most_expensive_eur: float
+    dataset_updated_at: str
+    disclaimer: str
+
+
+__all__.append("Kautionsanbieter")
+__all__.append("KautionsVergleichRequest")
+__all__.append("KautionsAngebot")
+__all__.append("KautionsVergleichResponse")

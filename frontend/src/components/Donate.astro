@@ -1,0 +1,55 @@
+---
+/**
+ * Donate — Spenden-Links (Patreon + PayPal) zur Unterstützung des Entwicklers.
+ * URLs sind Platzhalter und müssen einmalig in diesem File ersetzt werden.
+ */
+const PATREON_URL = "https://www.patreon.com/c/DARKSPIKE1988";
+const PAYPAL_URL = "https://www.paypal.com/paypalme/darkspike1988";
+---
+<section class="donate" id="spenden">
+  <h2>☕ Projekt unterstützen</h2>
+  <p>
+    Alle Werkzeuge sind <strong>kostenlos und bleiben kostenlos</strong> —
+    ohne Anmeldung, ohne Tracking, ohne Abo. Falls dir das Schweizer
+    Taschenmesser für Mieter geholfen hat, freue ich mich über eine kleine
+    Spende für Serverkosten &amp; Weiterentwicklung.
+  </p>
+  <div class="buttons">
+    <a class="btn patreon" href={PATREON_URL} target="_blank" rel="noopener noreferrer">
+      ❤️ Auf Patreon unterstützen
+    </a>
+    <a class="btn paypal" href={PAYPAL_URL} target="_blank" rel="noopener noreferrer">
+      💙 Mit PayPal spenden
+    </a>
+  </div>
+  <p class="hint">
+    Einmalig per PayPal oder monatlich per Patreon — beides optional und
+    ohne Verpflichtung. Danke! 🙏
+  </p>
+</section>
+
+<style>
+  .donate {
+    max-width: 720px;
+    margin: 2.5rem auto;
+    padding: 1.5rem;
+    background: #fffbe8;
+    border: 1px solid #f0d890;
+    border-radius: 12px;
+    text-align: center;
+  }
+  .donate h2 { margin-top: 0; }
+  .buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin: 1.25rem 0; }
+  .btn {
+    display: inline-block;
+    padding: 0.8rem 1.6rem;
+    border-radius: 10px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .patreon { background: #ff424d; color: white; }
+  .patreon:hover { background: #e63946; }
+  .paypal { background: #0070ba; color: white; }
+  .paypal:hover { background: #005f9e; }
+  .hint { color: #666; font-size: 0.9rem; margin-bottom: 0; }
+</style>

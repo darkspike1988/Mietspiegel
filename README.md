@@ -125,6 +125,70 @@ Antwort (gekürzt):
 | Widerspruchsgenerator-UI | ⏳ Backend fertig, UI pending |
 | GitHub-Repo / Open-Source | ⏳ pending |
 
+## 🚀 Kostenlos hosten (Fertig-zum-Hosten-Anleitung)
+
+Die App besteht aus einem **statischen Frontend** und einem **Python-Backend**.
+Beides lässt sich gemeinsam kostenlos betreiben — hier die einfachsten Wege:
+
+### Variante A: Komplett kostenlos (empfohlen für den Start)
+
+1. **Frontend (Astro)** → statisches `dist/` bauen und auf einen statischen Host pushen:
+   - **GitHub Pages**: Repo → Settings → Pages → `GitHub Actions` (Astro deploy) — kostenlos
+     ```bash
+     cd frontend
+     npm run build          # erzeugt dist/
+     ```
+   - Alternativ: **Cloudflare Pages** oder **Netlify** (免费 Tier) — `dist/` als Root
+2. **Backend (FastAPI)** → kostenlos hosten auf:
+   - **Fly.io** (free tier, ~3 shared VMs) oder **Render** (free web service)
+     ```bash
+     cd backend
+     # Dockerfile ist vorhanden: docker build -t mietspiegel-ai .
+     ```
+3. **Frontend mit Backend verbinden**: In `frontend/.env` setzen:
+   ```
+   PUBLIC_BACKEND_URL=https://dein-backend.fly.dev
+   ```
+   Dann `npm run build` — die URL wird ins statische Bundle gebacken.
+
+> **Hinweis**: Die deterministischen Werkzeuge (`/api/tools/*`) laufen **ohne
+> LLM und ohne API-Key** — sie funktionieren also auch komplett ohne
+> `MISTRAL_API_KEY` und verursachen **0 € Betriebskosten**. Nur die
+> PDF-Extraktion und der Widerspruchsgenerator brauchen den (optionalen)
+> Mistral-Key.
+
+### Variante B: Nur statisch (0 € Backend, eingeschränkt)
+
+Alle Ratgeber-Seiten (`/handbuch`, `/gesetze`) und Spenden-Links laufen
+komplett ohne Backend. Der Mietpreis-Check und die Werkzeuge brauchen das
+Backend — offline/self-hosted immer möglich (siehe oben, `uvicorn`).
+
+## 💝 Unterstützen
+
+Entwickelt als privates Open-Source-Projekt für Mieter. Alle Werkzeuge
+bleiben kostenlos. Wenn dir das Projekt hilft:
+
+- **Patreon**: <https://www.patreon.com/c/DARKSPIKE1988>
+- **PayPal**: <https://www.paypal.com/paypalme/darkspike1988>
+
+(Die Spenden-Links findest du auch auf jeder Ratgeber-Seite im Footer-Bereich.)
+
+## 📚 Ratgeber & Werkzeuge
+
+| Seite | Inhalt |
+|---|---|
+| `/` | Mietpreis-Check (PDF → Verdict) |
+| `/werkzeuge` | Nebenkosten · Kaution · Mieterhöhung · **Kautionsanbieter-Vergleich** |
+| `/handbuch` | **Handbuch Mietwucher**: Erkennen, Maschen großer Konzerne, Klage-Leitfaden, Videos, Open-Source-Tools |
+| `/gesetze` | **Gesetze & Politik**: schematisch Bund → Land → Kommune, mit Links zu Original-Texten |
+
+| API | Zweck |
+|---|---|
+| `POST /api/tools/nebenkosten` | NK-Abrechnung prüfen (Frist, Umlagefähigkeit, Arithmetik, Rückforderung) |
+| `POST /api/tools/kaution` | Kaution prüfen (§551 BGB) |
+| `POST /api/tools/kaution/vergleich` | **Kautionsbürgschaft-Anbieter vergleichen** (Daten: `data/processed/kautionsanbieter.json`, quartalsweise aktualisieren) |
+| `POST /api/tools/mieterhoehung` | Mieterhöhung prüfen (§558 BGB) |
+
 ## Lizenz
 
 Noch nicht festgelegt — bitte `LICENSE` hinzufügen vor erstem Push.

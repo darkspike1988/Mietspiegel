@@ -23,6 +23,7 @@ import Layout from "../layouts/Layout.astro";
       <button data-tool="nk" class="tab active">🧾 Nebenkosten</button>
       <button data-tool="kaution" class="tab">💰 Kaution</button>
       <button data-tool="erhoehung" class="tab">📈 Mieterhöhung</button>
+      <button data-tool="vergleich" class="tab">🛡️ Kautions-Vergleich</button>
     </nav>
 
     <!-- Nebenkosten -->
@@ -103,6 +104,26 @@ import Layout from "../layouts/Layout.astro";
       <button type="submit">Erhöhung prüfen</button>
     </form>
 
+    <!-- Kautionsanbieter-Vergleich -->
+    <form id="form-vergleich" class="tool-form" hidden>
+      <h2>Mietkautionsbürgschaft: Anbieter vergleichen</h2>
+      <p class="hint">
+        Was kostet ein Kautionsschutzbrief bei deiner Kautionssumme?
+        Alle Anbieter im Vergleich — Datenstand wird angezeigt, quartalsweise aktualisierbar.
+      </p>
+      <div class="grid">
+        <label>
+          Kautionssumme (€)
+          <input type="number" id="v-deposit" step="0.01" min="0.01" required />
+        </label>
+        <label>
+          Voraussichtliche Mietdauer (Jahre)
+          <input type="number" id="v-years" type="number" step="1" min="1" max="30" value="3" required />
+        </label>
+      </div>
+      <button type="submit">Anbieter vergleichen</button>
+    </form>
+
     <!-- Ergebnis -->
     <section id="result" class="result" hidden>
       <h2>Ergebnis</h2>
@@ -117,7 +138,7 @@ import Layout from "../layouts/Layout.astro";
   <footer>
     <a href="/">← Mietpreis-Check</a>
     <br />
-    Keine Rechtsberatung — Angaben ohne Gewähr. Im Streitfall Mieterverein fragen.
+    Keine Rechtsberatung — Angaben ohne Gewähr. Im Streitfall Mieterverein fragen.<br />Kautions-Datenstand: quartalsweise Aktualisierung · <a href="/handbuch">Handbuch Mietwucher</a> · <a href="/gesetze">Gesetze & Politik</a>
   </footer>
 </Layout>
 
@@ -171,7 +192,12 @@ import Layout from "../layouts/Layout.astro";
   };
 
   // --- Tabs ---
-  const forms = { nk: "form-nk", kaution: "form-kaution", erhoehung: "form-erhoehung" } as const;
+  const forms = {
+    nk: "form-nk",
+    kaution: "form-kaution",
+    erhoehung: "form-erhoehung",
+    vergleich: "form-vergleich",
+  } as const;
   document.querySelectorAll<HTMLButtonElement>(".tab").forEach((btn) => {
     btn.addEventListener("click", () => {
       document.querySelectorAll(".tab").forEach((b) => b.classList.remove("active"));
@@ -313,5 +339,40 @@ import Layout from "../layouts/Layout.astro";
         d.recommendation as string
       );
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
+  });
+
+  $("form-vergleich").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    try {
+      const d = await call("/api/tools/kaution/vergleich", {
+        deposit_eur: num("v-deposit"),
+        years: parseInt(val("v-years")) || 3,
+      });
+      const offers = d.offers as Array<{
+        provider: { name: string; bonitaet_check: string; source_url: string };
+        fee_eur_per_year: number;
+        total_cost_eur: number;
+        note: string | null;
+      }>;
+      const rows = offers
+        .map(
+          (o, i) =>
+            `<dt>${i + 1}. ${o.provider.name}</dt><dd>${o.fee_eur_per_year.toFixed(
+              2
+            )} €/Jahr · <strong>${o.total_cost_eur.toFixed(2)} € total</strong> · ${o.note ?? ""} · <a href="${
+              o.provider.source_url
+            }" target="_blank" rel="noopener noreferrer">Anbieter ↗</a></dd>`
+        )
+        .join("");
+      const fields: Array<[string, string]> = [
+        ["Kautionssumme", eur(d.deposit_eur as number)],
+        ["Günstigstes Angebot", `${(d.cheapest_offer_eur as number).toFixed(2)} € für ${(d.years as number)} Jahre`],
+        ["Ersparnis vs. teuerster Anbieter", `${(d.savings_vs_most_expensive_eur as number).toFixed(2)} €`],
+        ["Datenstand", String(d.dataset_updated_at)],
+      ];
+      render(fields.concat([["Anbieter (nach Kosten)", rows]]), [], String(d.disclaimer));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
   });
 </script>
