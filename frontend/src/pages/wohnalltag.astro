@@ -1,0 +1,366 @@
+---
+/**
+ * Wohnalltag-Ratgeber: Handwerker, Umzugsfirmen & Hausordnungen.
+ * Kosten-Realität, Fallstricke, Betrugsmaschen und unwirksame Klauseln —
+ * alles mit Quellen.
+ */
+import Layout from "../layouts/Layout.astro";
+import Donate from "../components/Donate.astro";
+---
+<Layout title="Handwerker, Umzugsfirmen & Hausordnungen — der Wohnalltag-Ratgeber">
+  <header>
+    <h1>🔧 Handwerker, 🚚 Umzugsfirmen &amp; 📋 Hausordnungen</h1>
+    <p class="lede">
+      Was darf der Vermieter von dir verlangen, was kostet der Markt wirklich
+      und wo lauern Abzocker? Der Ratgeber für den ganzen Wohnalltag —
+      mit Quellen und Rechtsgrundlagen.
+    </p>
+  </header>
+
+  <main class="ratgeber">
+    <!-- ============ HANDWERKER ============ -->
+    <section id="handwerker">
+      <h2>🔧 Handwerker: Wer zahlt was?</h2>
+      <p class="hint">
+        Grundregel: Der Vermieter ist zur Instandhaltung verpflichtet
+        (§ 535 Abs. 1 BGB) — du nicht, außer es steht im Vertrag.
+      </p>
+      <table>
+        <tr><th>Reparatur</th><th>Zahlt …</th><th>Norm / Rechtslage</th></tr>
+        <tr>
+          <td>Heizung, Wasser, Elektro, Dach, Fenster (Substanz)</td>
+          <td><strong>Vermieter</strong></td>
+          <td>§ 535 Abs. 1 BGB — Instandhaltungspflicht, immer</td>
+        </tr>
+        <tr>
+          <td><em>Kleine Reparaturen</em> (Hähne, Türgriffe, Stopfen)</td>
+          <td>🟡 Mieter nur bei ausdrücklicher <strong>Vertragsklausel</strong> —
+              Grenze: ~10 % der Jahreskaltmiete (BGH-Rechtsprechung), pro Reparatur
+              meist 80–120 €</td>
+          <td>Klausel muss klar geregelt sein (§ 307 BGB — sonst unwirksam)</td>
+        </tr>
+        <tr>
+          <td>Schäden, die <em>du</em> verursacht hast</td>
+          <td><strong>Mieter</strong></td>
+          <td>§ 538 BGB — Schadensersatz bei vertragswidrigem Gebrauch</td>
+        </tr>
+        <tr>
+          <td>Schönheitsreparaturen (streichen, tapezieren)</td>
+          <td>🟡 Nur wenn <strong>wirksam vereinbart</strong> — starre
+              "Endrenovierungsklausel" ist unwirksam (BGH)</td>
+          <td>§ 535 BGB + BGH: unrenovierte Übernahme = Klausel oft unwirksam</td>
+        </tr>
+        <tr>
+          <td>Mängel anzeigen (Schimmel, Heizung kaputt)</td>
+          <td><strong>Miete mindern</strong> möglich (5–100 % je nach Schwere)</td>
+          <td>§ 536 BGB — aber erst <em>nach</em> Anzeige + Fristsetzung</td>
+        </tr>
+      </table>
+
+      <h3>⚠️ Handwerker-Fallstricke</h3>
+      <ul class="tips">
+        <li><strong>Nie "nach Absprache mit dem Vermieter" zahlen</strong>, ohne
+            dass dir der Vermieter die Kostenübernahme schriftlich bestätigt hat —
+            sonst sitzt du auf der Rechnung.</li>
+        <li><strong>Vorab-Ankündigung</strong>: Handwerker-Zugang muss dir
+            rechtzeitig angekündigt werden (außer Notfall). Bei Nichtankündigung
+            musst du nicht öffnen.</li>
+        <li><strong>Rechnung prüfen</strong>: Bei Vermieter-Handwerkern auf
+            "kleine Reparatur"-Umlage in der Nebenkostenabrechnung achten —
+            Reparaturen sind <em>nicht</em> umlagefähig (siehe
+            <a href="/werkzeuge">NK-Check</a>).</li>
+        <li><strong>Selbst beauftragt = selbst zahlen</strong>: Bei dringenden
+            Mängeln (Heizung im Winter) darfst du nach erfolgloser Fristsetzung
+            selbst einen Handwerker beauftragen und die Kosten vom Vermieter
+            zurückverlangen (§ 536a Abs. 2 BGB).</li>
+      </ul>
+    </section>
+
+    <!-- ============ UMZUGSFIRMEN ============ -->
+    <section id="umzug">
+      <h2>🚚 Umzugsfirmen: Kosten-Realität &amp; Abzockmaschen</h2>
+
+      <h3>Was kostet der Markt wirklich? (2025/26)</h3>
+      <table>
+        <tr><th>Umzug</th><th>Typische Kosten</th><th>Basis</th></tr>
+        <tr>
+          <td>Stundensatz pro Helfer</td>
+          <td><strong>40–60 €/h</strong> (+ Fahrzeug)</td>
+          <td>Regional unterschiedlich (Berlin/München teurer)</td>
+        </tr>
+        <tr>
+          <td>2-Zimmer-Wohnung, lokal</td>
+          <td><strong>500–1.200 €</strong></td>
+          <td>Je nach Personal &amp; Zusatzleistungen</td>
+        </tr>
+        <tr>
+          <td>Fernumzug (~300 km)</td>
+          <td><strong>1.000–2.500 €</strong></td>
+          <td>Volumen- und streckenabhängig</td>
+        </tr>
+        <tr>
+          <td>Wochenend-/Monatsende-Aufschlag</td>
+          <td><strong>+10–20 %</strong></td>
+          <td>Stoßzeiten vermeiden = sparen</td>
+        </tr>
+        <tr>
+          <td>Mindestarbeitszeit</td>
+          <td>4–6 Stunden</td>
+          <td>Bei Mini-Umzügen oft unwirtschaftlich</td>
+        </tr>
+      </table>
+
+      <h3>🚨 Die klassischen Abzockmaschen</h3>
+      <table>
+        <tr><th>Masche</th><th>Erkennungszeichen</th><th>Schutz</th></tr>
+        <tr>
+          <td><strong>Tages-Festpreis-Locke</strong></td>
+          <td>"160 € für 4 Helfer &amp; 4 Stunden" — viel zu wenig kalkuliert</td>
+          <td>Betrüger planen zu wenig Zeit ein und stellen jede Stunde darüber
+              überteuert in Rechnung. <strong>Niemals</strong> Festpreise ohne
+              schriftliche Besichtigung akzeptieren.</td>
+        </tr>
+        <tr>
+          <td><strong>Nachträgliche Preisschraube</strong></td>
+          <td>"Wir haben 3 Stunden länger gebraucht" oder
+              "Das Sofa war größer als angegeben"</td>
+          <td>Vertrag muss <strong>Anzahl Helfer, Stunden, Volumen (m³!)</strong>
+              eindeutig regeln. Berechnung nach m³ ist transparenter als m².</td>
+        </tr>
+        <tr>
+          <td><strong>Anzahlung / Vorkasse</strong></td>
+          <td>Hohe Anzahlung vor dem Umzug gefordert</td>
+          <td>Seriöse Firmen verlangen <strong>keine oder minimale</strong>
+              Anzahlung. Bei Absprünge mit Anzahlung: Geld meist weg.</td>
+        </tr>
+        <tr>
+          <td><strong>Fake-Firmen / Robocalls</strong></td>
+          <td>Unaufgeforderte Anrufe: "Ihr Umzug ist gebucht, bitte bestätigen"</td>
+          <td>Auflegen, nichts bestätigen —
+              <a href="https://www.verbraucherzentrale.de/wissen/vertraege-reklamation/kundenrechte/umzugsunternehmen-so-fallen-sie-nicht-auf-umzugsabzocker-rein-10470" target="_blank" rel="noopener noreferrer">Verbraucherzentrale: Umzugs-Abzocker</a></td>
+        </tr>
+        <tr>
+          <td><strong>"Versicherung inklusive"</strong></td>
+          <td>Schaden passiert → "Das war nicht abgedeckt"</td>
+          <td>Nur die <strong>gesetzliche Grundhaftung</strong> (0,60 €/kg wenn
+              Paketvertrag, sonst weniger) ist Standard — für echte Deckung
+              extra Versicherung abschließen oder Haftungsausschluss prüfen.</td>
+        </tr>
+      </table>
+
+      <h3>✅ Seriositäts-Check für Umzugsfirmen</h3>
+      <ul class="tips">
+        <li><strong>Ortstermin/Besichtigung</strong>: Seriöse Firmen sehen sich
+            die Wohnung vorher an (physisch oder per Video) — alles andere ist
+            ein Schätzungsspiel.</li>
+        <li><strong>Angebot schriftlich</strong> mit Positionen: Personal, Fahrzeug,
+            Zeit, Zusatzleistungen (Packmaterial, Montage), Halteverbotszone.</li>
+        <li><strong>Bewertungen</strong> prüfen (Google, Umzugsportale) — aber
+            gefälschte 5-Sterne-Wüsten erkennen: viele Bewertungen am selben Tag
+            = Warnsignal.</li>
+        <li><strong>Keine Bar-Zahlung im Voraus</strong> — Rechnung nach
+            erbrachter Leistung.</li>
+      </ul>
+    </section>
+
+    <!-- ============ HAUSORDNUNG ============ -->
+    <section id="hausordnung">
+      <h2>📋 Hausordnungen: Was gilt — und was ist unwirksam?</h2>
+      <p class="hint">
+        Die Hausordnung ist Teil des Mietvertrags (AGB) — aber nur, wenn die
+        Klauseln wirksam sind. Unwirksame Klauseln musst du nicht befolgen,
+        <strong>selbst wenn du unterschrieben hast</strong> (§ 305c Abs. 2 BGB).
+      </p>
+
+      <h3>✅ Was eine Hausordnung wirksam regeln darf</h3>
+      <ul class="tips">
+        <li>Ruhezeiten (typisch 22–6 Uhr Nacht, 13–15 Uhr Mittag)</li>
+        <li>Nutzung von Gemeinschaftsräumen (Keller, Waschküche, Garten)</li>
+        <li>Treppenhausreinigung (Rotationsprinzip ist üblich und zulässig)</li>
+        <li>Fluchtwege freihalten (kein Fahrradparking im Treppenhaus — zulässig)</li>
+        <li>Mülltrennung</li>
+        <li>Zeitfenster für lärmende handwerkliche Tätigkeiten</li>
+      </ul>
+
+      <h3>❌ Typische unwirksame Klauseln (nicht befolgen!)</h3>
+      <table>
+        <tr><th>Klausel</th><th>Warum unwirksam</th><th>Norm</th></tr>
+        <tr>
+          <td>"Waschmaschine/Trockner nur Wer tags 8–18 Uhr, nicht sonntags"</td>
+          <td>Betrieb von Haushaltsgeräten gehört zum normalen Wohngebrauch —
+              enge Zeitfenster benachteiligen Berufstätige unangemessen.
+              AG Hamburg hat 2024 enge Ruhezeit-Hausordnungen insgesamt
+              gekippt (21 C 402/23).</td>
+          <td>§ 307 BGB (unangemessene Benachteiligung)</td>
+        </tr>
+        <tr>
+          <td>"Besuch muss sich anmelden / Übernachtungsverbot für Gäste"</td>
+          <td>Besuchsempfang ist Teil des Persönlichkeitsrechts — Vermieter
+              darf den "vertragsgemäßen Gebrauch" nicht einengen.</td>
+          <td>§ 305c + § 307 BGB</td>
+        </tr>
+        <tr>
+          <td>"Musikinstrumente komplett verboten"</td>
+          <td>BGH erlaubt Musizieren an Werktagen 2–3 h, Sonn-/Feiertagen
+              1–2 h (innerhalb der Ruhezeiten gilt Grenze).</td>
+          <td>BGH V ZR 143/17</td>
+        </tr>
+        <tr>
+          <td>"Nachträgliche Änderung der Hausordnung gilt automatisch"</td>
+          <td>Dynamische Änderungsklauseln sind nur für "Ordnungsvorschriften"
+              (keine Nutzungs-Änderungen!) zulässig — Waschverbot kann nicht
+              nachträglich eingeführt werden.</td>
+          <td>§ 308 Nr. 4 BGB</td>
+        </tr>
+        <tr>
+          <td>"Unbedingte Ruhe" / pauschale Lärmverbote</td>
+          <td>Normale Wohngeräusche (Gehen, Waschmaschine, Duschen) sind
+              "sozialadäquat" und müssen geduldet werden — auch nachts.</td>
+          <td>AG Hamburg 21 C 402/23, § 307 BGB</td>
+        </tr>
+        <tr>
+          <td>Überraschende Klauseln (z.B. Übernachtungsverbot versteckt im
+              Mülltrennungs-Absatz)</td>
+          <td>"Überraschende Klauseln" werden gar nicht Vertragsbestandteil.</td>
+          <td>§ 305c Abs. 1 BGB</td>
+        </tr>
+      </table>
+
+      <h3>💡 Praxistipps bei Hausordnungs-Streit</h3>
+      <ul class="tips">
+        <li><strong>Erst reden, dann eskalieren</strong>: Nachbar direkt
+            ansprechen, bevor der Vermieter eingeschaltet wird — löst die
+            meisten Fälle.</li>
+        <li><strong>Lärmprotokoll</strong> nur als Anhaltspunkt — Gerichte
+            verlangen "objektive Anhaltspunkte für eine wesentliche Beeinträchtigung",
+            Protokolle allein reichen nicht (AG Hamburg 2024).</li>
+        <li><strong>Klausel vor Abmahnung prüfen</strong>: Wenn du eine
+            (vermeintliche) Hausordnungs-Regel brichst, die unwirksam ist —
+            eine Abmahnung darauf hat dann keinen Bestand.</li>
+        <li><strong>Duschen/Baden immer erlaubt</strong> — auch nachts und
+            wenn's die "Zimmerlautstärke" überschreitet (sozialadäquat).</li>
+        <li><strong>Fahrrad in der Wohnung</strong>: Generell erlaubt, solange
+            keine Beschädigung/Beinträchtigung — ein Verbot "nur per Hausordnung"
+            ist meist unwirksam.</li>
+      </ul>
+    </section>
+
+
+    <!-- ============ WEITERE THEMEN ============ -->
+    <section id="weitere">
+      <h2>➕ Was sonst noch dazugehört</h2>
+
+      <h3>📺 Rundfunkbeitrag (GEZ)</h3>
+      <ul class="tips">
+        <li>Pflicht für <strong>jede Wohnung</strong>, unabhängig von Geräteanzahl:
+            aktuell 18,36 €/Monat (Stand 2025, Anpassung alle 3 Jahre).</li>
+        <li>Befreiung/Verminderung bei BAföG, Bürgergeld, Grundsicherung —
+            Rückwirkend bis 3 Monate, beim Beitragsservice beantragen.</li>
+        <li><strong>Auslandsemester/Duales Leben</strong>: Zweitwohnung kann
+            befreit sein, wenn bereits eine Wohnung angemeldet ist —
+            <a href="https://www.rundfunkbeitrag.de/" target="_blank" rel="noopener noreferrer">rundfunkbeitrag.de</a>.</li>
+      </ul>
+
+      <h3>🍄 Schimmel &amp; Mietminderung — typische Quoten (Rechtsprechung)</h3>
+      <table>
+        <tr><th>Mangel</th><th>Typische Minderungsquote (BGH/Landgerichte)</th></tr>
+        <tr><td>Schimmelbefall (deutlich, sichtbar)</td><td>10–20 %</td></tr>
+        <tr><td>Heizung fällt im Winter aus</td><td>bis 100 %</td></tr>
+        <tr><td>Feuchtigkeit in Keller (Mietminderung nur bei konkreter Beeinträchtigung)</td><td>5–10 %</td></tr>
+        <tr><td>Aufzug dauerhaft defekt (Obergeschoss)</td><td>5–10 %</td></tr>
+        <tr><td>Lärmbelästigung durch Sanierung nebenan</td><td>bis 30 % (wenn unvermeidbar)</td></tr>
+      </table>
+      <p class="hint">
+        Minderung nur <strong>nach</strong> Mängelanzeige + Fristsetzung, ideal mit
+        Fotodokumentation + Zeugen. Rückwirkend kannst du Minderung für die
+        zurückliegenden 3 Jahre geltend machen.
+      </p>
+
+      <h3>🐱 Haustiere</h3>
+      <ul class="tips">
+        <li><strong>Kleine Tiere</strong> (Katzen, Hamster, Vögel in Käfig):
+            generell erlaubt — Klauseln "keine Haustiere" sind meist unwirksam.</li>
+        <li><strong>Hunde</strong>: Etwas komplizierter — bei erheblicher
+            Belästigung (Bellen, Größe) kann der Vermieter zustimmen müssen,
+            pauschale Hundeverbote sind aber oft unwirksam.</li>
+        <li><strong>Aggressive Rassen</strong>: Vermieter kann im Einzelfall
+            (Gefahr für Nachbarn) widersprechen.</li>
+      </ul>
+
+      <h3>🔑 Untervermietung</h3>
+      <ul class="tips">
+        <li>Du hast Anspruch auf Erlaubnis, wenn du einen <strong>berechtigten
+            Grund</strong> hast (§ 553 BGB) — z.B. berufliche Abwesenheit,
+            Partner zieht ein.</li>
+        <li>Der Vermieter kann nur bei <strong>Überbelegung</strong> ablehnen.</li>
+        <li><strong>Airbnb/Wochenendvermietung</strong>: <em>Nicht</em> erlaubt
+            ohne Zustimmung — das ist Gebrauchsüberlassung an Dritte, keine
+            Untervermietung (BGH).</li>
+      </ul>
+
+      <h3>📝 Wohnungsübergabe: Protokoll-Checkliste</h3>
+      <ol class="steps">
+        <li><strong>Übergabeprotokoll schriftlich</strong> + Fotos mit Datum — schützt bei
+            Kaution-Streit (du bist in der Beweispflicht für den Zustand bei Rückgabe!)</li>
+        <li>Alle Räume + Zählerstände (Strom, Gas, Wasser, ggf. Heizung)</li>
+        <li>Schlüsselanzahl dokumentieren (Wohnung, Keller, Briefkasten, Garage)</li>
+        <li>Vorhandene Mängel (auch kleine) — Vermerk "bei Einzug vorhanden"</li>
+        <li>Beide unterschreiben — Vermieter-Vertreter muss unterschreiben dürfen</li>
+        <li>Kaution: Rückgabe + Zins <strong>nach</strong> vollständiger
+            Abrechnung, spätestens "angemessene Frist" (3–6 Monate üblich)</li>
+      </ol>
+    </section>
+
+    <!-- ============ QUELLEN ============ -->
+    <section id="quellen">
+      <h2>📚 Quellen</h2>
+      <ul>
+        <li>
+          <a href="https://www.verbraucherzentrale.de/wissen/vertraege-reklamation/kundenrechte/umzugsunternehmen-so-fallen-sie-nicht-auf-umzugsabzocker-rein-10470" target="_blank" rel="noopener noreferrer">Verbraucherzentrale: Umzugsunternehmen &amp; Abzocker</a>
+        </li>
+        <li>
+          <a href="https://www.gesetze-im-internet.de/bgb/__535.html" target="_blank" rel="noopener noreferrer">§ 535 BGB</a> (Instandhaltungspflicht) ·
+          <a href="https://www.gesetze-im-internet.de/bgb/__536.html" target="_blank" rel="noopener noreferrer">§ 536 BGB</a> (Mietminderung) ·
+          <a href="https://www.gesetze-im-internet.de/bgb/__307.html" target="_blank" rel="noopener noreferrer">§ 307 BGB</a> (AGB-Kontrolle)
+        </li>
+        <li>
+          <a href="https://www.immobilienscout24.de/wissen/vermieten/waschmaschine-oder-trockner-in-der-wohnung-verbieten.html" target="_blank" rel="noopener noreferrer">ImmoScout24: Waschmaschine in der Wohnung verbieten?</a> (mit BGH-Linie)
+        </li>
+        <li>
+          AG Hamburg, Urteil v. 02.08.2024 — 21 C 402/23 (Hausordnung unwirksam)
+        </li>
+        <li>
+          <a href="https://www.rundfunkbeitrag.de/" target="_blank" rel="noopener noreferrer">rundfunkbeitrag.de</a> (offizielle Seite des Beitragsservice)
+        </li>
+        <li>
+          <a href="https://www.umzugsportal.de/ratgeber/was-kostet-ein-umzug/" target="_blank" rel="noopener noreferrer">Umzugsportal: Was kostet ein Umzug?</a> (Marktpreise 2025)
+        </li>
+      </ul>
+    </section>
+
+    <Donate />
+  </main>
+
+  <footer>
+    <a href="/">← Mietpreis-Check</a> ·
+    <a href="/werkzeuge">Werkzeuge</a> ·
+    <a href="/handbuch">Handbuch</a> ·
+    <a href="/gesetze">Gesetze</a> ·
+    <a href="/versorger">Strom &amp; Internet</a>
+  </footer>
+</Layout>
+
+<style>
+  h1 { text-align: center; padding: 2rem 1rem 0; color: var(--color-accent); margin: 0; }
+  .lede { text-align: center; color: var(--color-muted); max-width: 700px; margin: 0 auto 2rem; padding: 0 1rem; }
+  .ratgeber { max-width: 820px; margin: 0 auto 3rem; padding: 0 1rem; }
+  section { margin-bottom: 2.5rem; }
+  h2 { border-bottom: 2px solid #e0e0e0; padding-bottom: 0.4rem; }
+  h3 { margin-top: 1.5rem; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.92rem; }
+  th, td { border: 1px solid #ddd; padding: 0.55rem; text-align: left; vertical-align: top; }
+  th { background: #f2f2f2; }
+  .hint { color: #666; font-size: 0.88rem; }
+  .tips li { margin-bottom: 0.5rem; line-height: 1.45; }
+  footer { text-align: center; padding: 2rem; color: #888; font-size: 0.85rem; }
+</style>
