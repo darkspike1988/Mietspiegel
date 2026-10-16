@@ -374,3 +374,39 @@ async def versorger_strompreise() -> dict:
         "most_expensive_hours": smard_provider.most_expensive_hours(prices, n=5),
         "series": prices,
     }
+
+
+# ----------------------------------------------------------------------
+# Statistische Tarif-Auswertung (Portal-Ranking + SMARD-Zeitreihe)
+# ----------------------------------------------------------------------
+
+@api_router.post("/versorger/beobachtung", response_model=TariffObservation)
+async def versorger_beobachtung(obs: TariffObservation) -> TariffObservation:
+    """Anonyme Preis-Beobachtung aus einem Portal speichern.
+
+    Der User liest z.B. den günstigsten ct/kWh-Preis bei Verivox und
+    Check24 ab und trägt beide ein — die Statistik rechnet daraus,
+    welches Portal wirklich am günstigsten ist.
+    """
+    from app.services import tariff_stats
+
+    return tariff_stats.add_observation(obs)
+
+
+@api_router.get("/versorger/statistik", response_model=TariffStatisticsResponse)
+async def versorger_statistik(product: str, postal_code: str) -> TariffStatisticsResponse:
+    """Portal-Ranking für Produkt+PLZ: min/median/avg je Portal,
+    nach Median sortiert — der deterministische Gewinner steht vorn."""
+    from app.services import tariff_stats
+
+    return tariff_stats.compute_portal_ranking(product, postal_code)
+
+
+@api_router.get("/versorger/strompreise/statistik", response_model=SmardTimeStats)
+async def versorger_strompreise_statistik() -> SmardTimeStats:
+    """SMARD-Börsenpreise deterministisch aggregiert: nach Tagesstunde
+    und Wochentag — wann ist Strom im Schnitt am günstigsten?"""
+    from app.services import smard_provider, tariff_stats
+
+    prices = await smard_provider.fetch_day_ahead_prices()
+    return tariff_stats.aggregate_smard_by_time(prices)
