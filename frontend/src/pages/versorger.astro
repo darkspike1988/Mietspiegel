@@ -1,0 +1,273 @@
+---
+/**
+ * Versorger-Ratgeber: Strom, Gas & Internet (Glasfaser/Kabel/DSL/LTE/5G).
+ * Statistisch ausgewertet (Breitbandatlas, Bundesnetzagentur, BREKO) mit
+ * Fallstricken und Betrugsmaschen — damit Mieter nicht über den Tisch
+ * gezogen werden.
+ */
+import Layout from "../layouts/Layout.astro";
+import Donate from "../components/Donate.astro";
+---
+<Layout title="Strom, Gas & Internet: Ratgeber gegen Fallstricke und Betrug">
+  <header>
+    <h1>🔌 Strom, Gas &amp; Internet — der Ratgeber für deine Wohnung</h1>
+    <p class="lede">
+      Was kostet der Markt wirklich, wo lauern Fallstricke im Kleingedruckten
+      und welche Betrugsmaschen gibt es? Statistisch untermauert, einfach
+      erklärt — für Strom, Gas und alle Internet-Technologien.
+    </p>
+  </header>
+
+  <main class="ratgeber">
+    <!-- ============ STROM & GAS ============ -->
+    <section id="strom">
+      <h2>⚡ Strom &amp; Gas: Preisgarantie vs. Preisstandgarantie</h2>
+      <p class="hint">
+        Der wichtigste Fallstrick beim Anbieterwechsel ist ein Wort:
+        <strong>"Preisgarantie" ≠ "Preisstandgarantie"</strong>
+      </p>
+      <table>
+        <tr><th>Begriff</th><th>Was er wirklich bedeutet</th><th>Risiko</th></tr>
+        <tr>
+          <td><strong>Preisstandgarantie</strong></td>
+          <td>Nur der <em>reine Energiepreis</em> des Anbieters ist fix — Steuern,
+              Umlagen und <strong>Netzentgelte</strong> können weiter steigen
+              (und werden oft 40–50 % der Rechnung!</td>
+          <td>🟡 Klingt garantiert, aber die Rechnung kann trotzdem steigen</td>
+        </tr>
+        <tr>
+          <td><strong>Preisgarantie (echt)</strong></td>
+          <td><em>Alle</em> Preisbestandteile sind garantiert fix — Steuern und
+              Netzentgelte inklusive.</td>
+          <td>✅ Meist 12 Monate, teurer als "nur Energiepreis"</td>
+        </tr>
+        <tr>
+          <td><strong>Bonus-/Sofortbonus</strong></td>
+          <td>Einmaliger Rabatt nach 6–12 Monaten — oft an Bedingungen geknüpft
+              (kein Umzug, keine vorzeitige Kündigung).</td>
+          <td>🟡 Jahrespreis wird damit "künstlich" niedrig gerechnet —
+              im 2. Jahr explodiert der Preis oft</td>
+        </tr>
+        <tr>
+          <td><strong>Vorkasse / Kaution</strong></td>
+          <td>Anbieter verlangt mehrere Monatsabschläge im Voraus.</td>
+          <td>🔴 Bei Anbieterinsolvenz: Geld meist <strong>weg</strong> —
+              Vorkasse-Anbieter mit extra-günstigen Preissen sind ein Warnsignal</td>
+        </tr>
+      </table>
+
+      <h3>💡 Tipps, die dich schützen</h3>
+      <ul class="tips">
+        <li>Immer die <strong>Preisgarantie</strong> prüfen: Was genau ist garantiert? (Steuer & Netzentgelte inklusive?)</li>
+        <li><strong>Abschlagspreisen</strong> (Grundgebühr + Arbeitspreis) vergleichen, nicht nur den beworbenen "Jahrespreis".</li>
+        <li>Kündigungsfrist prüfen: bei Wechsel günstig, bei Unzufriedenheit teuer.</li>
+        <li><strong>Nie am Telefon abschließen</strong> — echte Vergleiche gibt's nur schriftlich / online (Check24, Verivox, Idealo).</li>
+        <li><strong>Neuanbieter-Check</strong>: Wie lange ist der Anbieter am Markt? Gibt es aktuelle Insolvenzen? (z.B. nach der Energiekrise 2022/23 dutzende Pleiten)</li>
+      </ul>
+    </section>
+
+    <!-- ============ BETRUG ============ -->
+    <section id="betrug">
+      <h2>🚨 Betrugsmaschen bei Strom &amp; Gas</h2>
+      <p class="hint">
+        Quellen: Bundesnetzagentur, Verbraucherzentralen, Stadtwerke-Warnungen
+        (laufend aktualisiert — Links unten).
+      </p>
+      <table>
+        <tr><th>Masche</th><th>Erkennungszeichen</th><th>Schutz</th></tr>
+        <tr>
+          <td><strong>Falsche "Stadtwerke"</strong> am Telefon</td>
+          <td>Anrufer kennt Name/Adresse/Zählernummer, redet von "Preisbremsen",
+              "Preisgarantie" oder droht mit Stromsperre ("über Weihnachten")</td>
+          <td><strong>Auflegen.</strong> Echte Stadtwerke rufen nie anonym an
+              und fragen nie nach Zählernummer am Telefon. Ohne deine Daten
+              kann niemand wechseln — die <em>Zählernummer</em> ist der Schlüssel!</td>
+        </tr>
+        <tr>
+          <td><strong>Unterschobener Vertrag</strong> ("Anbieterwechsel-Betrug")</td>
+          <td>Vertreter an der Haustür oder am Telefon fragt nach
+              Zählerdaten "zur Bestätigung"</td>
+          <td>Niemals Zählernummer, Zählerstand oder Unterschrift geben.
+              Schriftliche Bestätigungen kommen oft erst <em>nach</em> Ablauf
+              der Widerrufsfrist — dann ist der Wechsel schon durch.</td>
+        </tr>
+        <tr>
+          <td><strong>"Bundesnetzagentur" oder "Energiezentrale" am Telefon</strong></td>
+          <td>Behörden geben sich als angebliche offizielle Stelle aus, um
+              "Preisbremsen" oder Zähleraustausch durchzusetzen</td>
+          <td>Die Bundesnetzagentur ruft <strong>niemals</strong> an, um Verträge
+              zu ändern oder Daten abzufragen. Auflegen und bei der echten
+              Behörde melden.</td>
+        </tr>
+        <tr>
+          <td><strong>Fake-"Smart-Meter"-Austausch</strong></td>
+          <td>Anrufer behauptet, der Stromzähler <em>müsse</em> gegen einen
+              intelligenten Zähler getauscht werden (EnWG §14a)</td>
+          <td>Ein Zähler-Tausch läuft <strong>immer schriftlich</strong> über den
+              Messstellenbetreiber — nie über einen telefonischen Vertrieb.</td>
+        </tr>
+      </table>
+      <p class="hint">
+        Opfer geworden? → Widerruf schriftlich an den neuen Anbieter +
+        Verbraucherzentrale kontaktieren (Rückabwicklung). Unerlaubte
+        Telefonwerbung ("Cold Calls") bei der
+        <a href="https://www.bundesnetzagentur.de/DE/Vportal/Energie/aktuellehinweise.html" target="_blank" rel="noopener noreferrer">Bundesnetzagentur melden</a>.
+      </p>
+    </section>
+
+    <!-- ============ INTERNET ============ -->
+    <section id="internet">
+      <h2>🌐 Internet: Glasfaser vs. Kabel vs. DSL vs. LTE/5G</h2>
+
+      <h3>Statistik: Was steht in Deutschland wo? (Breitbandatlas, Dezember 2025)</h3>
+      <table>
+        <tr><th>Technologie</th><th>Verfügbarkeit (Haushalte)</th><th>Typische Speeds</th><th>Wann sinnvoll?</th></tr>
+        <tr>
+          <td><strong>FTTH/B (Glasfaser bis Wohnung/Gebäude)</strong></td>
+          <td><strong>48,9 %</strong> (Dez. 2025) — Tendenz stark steigend</td>
+          <td>100–1000+ Mbit/s symmetrisch (Upload = Download!)</td>
+          <td>Immer wenn verfügbar — Zukunftstechnologie, stabil, kaum Latenz. Prüfe:
+              <a href="https://gigabitgrundbuch.bund.de/GIGA/DE/Breitbandatlas/start.html" target="_blank" rel="noopener noreferrer">Breitbandatlas</a></td>
+        </tr>
+        <tr>
+          <td><strong>Kabel (HFC, DOCSIS 3.1)</strong></td>
+          <td>~8,5 Mio aktive Anschlüsse (2025, leicht sinkend)</td>
+          <td>100–1000 Mbit/s Download, aber Upload oft nur 50 Mbit/s</td>
+          <td>Gut für Streaming/Downloads; Upload-schwach = schlecht für
+              Homeoffice/Videokonferenzen</td>
+        </tr>
+        <tr>
+          <td><strong>DSL (Telefonleitung/Kupfer)</strong></td>
+          <td>Noch ~58,5 % der aktiven Anschlüsse (2025, sinkend)</td>
+          <td>16–250 Mbit/s, <em>abhängig von Leitungslänge</em></td>
+          <td>Wo nichts anderes geht — Speed sinkt mit Entfernung zum Verteiler</td>
+        </tr>
+        <tr>
+          <td><strong>LTE/5G (Mobilfunkfestnetz)</strong></td>
+          <td>Flächendeckend, aber mit Tagesvolumen-Deckelung</td>
+          <td>100–500 Mbit/s, aber oft Drosselung nach 50–200 GB</td>
+          <td>Übergangslösung oder wenig genutzte Wohnung —
+              <strong>kein Ersatz für Festnetz</strong> bei Homeoffice/Streaming-Haushalten</td>
+        </tr>
+      </table>
+      <p class="hint">
+        Technologieübergreifend (Glasfaser + Kabel): <strong>79,0 %</strong> der
+        Haushalte haben Gigabit-Verfügbarkeit. Aber: Verfügbarkeit ≠
+        Anschluss — nur ~29,8 % sind tatsächlich per Glasfaser
+        <em>angeschlossen</em> (BREKO, Mitte 2026).
+        <a href="https://gigabitbuero.de/artikel/neue-versorgungsdaten-im-breitbandatlas-verfugbar-datenstand-dezember-2025/" target="_blank" rel="noopener noreferrer">Quelle: Gigabitbüro des Bundes</a>.
+      </p>
+
+      <h3>⚠️ Fallstricke bei Internet-Verträgen</h3>
+      <table>
+        <tr><th>Falle</th><th>Erklärung</th><th>Gegenmittel</th></tr>
+        <tr>
+          <td><strong>"Bis zu"-Geschwindigkeit</strong></td>
+          <td>Anbieter wirbt mit "bis zu 1000 Mbit/s" — real kommen oft nur
+              10–40 % davon an</td>
+          <td>Messen mit <a href="https://www.breitbandmessung.de/" target="_blank" rel="noopener noreferrer">breitbandmessung.de</a>
+              (Verbraucherzentrale-Tool). Bei dauerhaft weniger als versprochen:
+              <strong>Sonderkündigungsrecht</strong>!</td>
+        </tr>
+        <tr>
+          <td><strong>Drosselung / Fair-Use-Policy</strong></td>
+          <td>Nach Volumen-Limit wird der Speed gedrosselt (v.a. bei LTE/5G-Tarifen)</td>
+          <td>Volumen-Limit im Vertrag prüfen — für Wohnungs-Alltag min. "unbegrenzt" oder >300 GB</td>
+        </tr>
+        <tr>
+          <td><strong>Router-Zwang / Kaufmiete</strong></td>
+          <td>Teure Miete für Zwangs-Router, oder Router muss gekauft werden</td>
+          <td>Seit 2016 ist <strong>Routerfreiheit</strong> Gesetz (TKG §73) —
+              jeder Anbieter muss fremde Router zulassen</td>
+        </tr>
+        <tr>
+          <td><strong>Automatische Verlängerung / 24-Monats-Falle</strong></td>
+          <td>Nach Erstlaufzeit verlängert sich der Vertrag oft still um 12 Monate</td>
+          <td>Kündigungsfrist prüfen (oft 3 Monate vor Laufzeitende) —
+              Wechselservice nutzen (Check24/Verivox erinnern kostenlos)</td>
+        </tr>
+        <tr>
+          <td><strong>"Kostenlose" Hardware / Installationspauschale</strong></td>
+          <td>Angebot lockt mit 0 €, im Kleingedruckten: 100–200 € Aktivierung
+              oder Bereitstellungspreis</td>
+          <td>Einmalpreis vs. monatlicher Preis immer zusammen rechnen</td>
+        </tr>
+        <tr>
+          <td><strong>Betrug: Fake-Techniker / Phishing</strong></td>
+          <td>"Techniker" klingelt und will "den Router prüfen" — tatsächlich
+              Datendiebstahl oder Vertragsumstellung</td>
+          <td>Niemals Fremde an Router/PC lassen. Router-Passwort ändern;
+              Phishing-Mails mit Link nicht anklicken — Anbieter fragen nie
+              nach Passwort per Mail</td>
+        </tr>
+      </table>
+    </section>
+
+    <!-- ============ CHECKLISTE UMZUG ============ -->
+    <section id="checkliste">
+      <h2>✅ Checkliste: Versorger-Wechsel in der neuen Wohnung</h2>
+      <ol class="steps">
+        <li><strong>Vor Einzug</strong>: Verfügbarkeit prüfen —
+            <a href="https://gigabitgrundbuch.bund.de/GIGA/DE/Breitbandatlas/start.html" target="_blank" rel="noopener noreferrer">Breitbandatlas</a> ( Glasfaser/Kabel/DSL) und
+            Mobilfunk-Abdeckung (LTE/5G)</li>
+        <li><strong>Grundversorger-Klausel</strong>: Ohne Vertrag bist du automatisch im
+            <em>Grundversorger-Tarif</em> (teuerste Option!) — aktiv wechseln spart
+            oft 200–400 €/Jahr</li>
+        <li><strong>Niemals Grundgebühr zahlen, ohne Arbeitspreis zu prüfen</strong>:
+            Cent/kWh ist die eigentliche Kostengröße</li>
+        <li><strong>Internet: Mindestlaufzeit 24 Monate ist Standard</strong> —
+            kürzere gibt's oft bei kleinen Anbietern, aber prüfe deren Bonität
+            (Vorkasse = Risiko)</li>
+        <li><strong>Zählerstand fotografieren</strong> am Einzugstag — belegt
+            deinen Verbrauchs-Start und schützt vor Alt-Schulden</li>
+        <li><strong>Schriftlich kündigen</strong> beim Alt-Anbieter (Einzug = neuer
+            Lieferant über Zählernummer, aber Kündigung muss trotzdem selbst
+            erfolgen — sonst läuft der alte Vertrag weiter!)</li>
+      </ol>
+    </section>
+
+    <!-- ============ QUELLEN ============ -->
+    <section id="quellen">
+      <h2>📚 Quellen</h2>
+      <ul>
+        <li>
+          <a href="https://gigabitgrundbuch.bund.de/GIGA/DE/Breitbandatlas/start.html" target="_blank" rel="noopener noreferrer">Breitbandatlas (Bundesnetzagentur)</a> — halbjährliche, adressscharfe Verfügbarkeitsdaten
+        </li>
+        <li>
+          <a href="https://gigabitbuero.de/artikel/neue-versorgungsdaten-im-breitbandatlas-verfugbar-datenstand-dezember-2025/" target="_blank" rel="noopener noreferrer">Gigabitbüro des Bundes</a> — Glasfaser 48,91 % (Dez. 2025)
+        </li>
+        <li>
+          <a href="https://www.bundesnetzagentur.de/DE/Vportal/Energie/aktuellehinweise.html" target="_blank" rel="noopener noreferrer">Bundesnetzagentur: Betrugsmaschen Energie</a>
+        </li>
+        <li>
+          <a href="https://www.breitbandmessung.de/" target="_blank" rel="noopener noreferrer">Breitbandmessung.de</a> — Verbraucherzentrale-Tool für Geschwindigkeitsmessung
+        </li>
+      </ul>
+    </section>
+
+    <Donate />
+  </main>
+
+  <footer>
+    <a href="/">← Mietpreis-Check</a> ·
+    <a href="/werkzeuge">Werkzeuge</a> ·
+    <a href="/handbuch">Handbuch Mietwucher</a> ·
+    <a href="/gesetze">Gesetze & Politik</a>
+  </footer>
+</Layout>
+
+<style>
+  h1 { text-align: center; padding: 2rem 1rem 0; color: var(--color-accent); margin: 0; }
+  .lede { text-align: center; color: var(--color-muted); max-width: 700px; margin: 0 auto 2rem; padding: 0 1rem; }
+  .ratgeber { max-width: 820px; margin: 0 auto 3rem; padding: 0 1rem; }
+  section { margin-bottom: 2.5rem; }
+  h2 { border-bottom: 2px solid #e0e0e0; padding-bottom: 0.4rem; }
+  h3 { margin-top: 1.5rem; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.92rem; }
+  th, td { border: 1px solid #ddd; padding: 0.55rem; text-align: left; vertical-align: top; }
+  th { background: #f2f2f2; }
+  .hint { color: #666; font-size: 0.88rem; }
+  .tips li { margin-bottom: 0.5rem; line-height: 1.45; }
+  .steps li { margin-bottom: 0.8rem; line-height: 1.5; }
+  footer { text-align: center; padding: 2rem; color: #888; font-size: 0.85rem; }
+</style>

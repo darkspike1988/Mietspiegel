@@ -181,6 +181,7 @@ bleiben kostenlos. Wenn dir das Projekt hilft:
 | `/werkzeuge` | Nebenkosten · Kaution · Mieterhöhung · **Kautionsanbieter-Vergleich** |
 | `/handbuch` | **Handbuch Mietwucher**: Erkennen, Maschen großer Konzerne, Klage-Leitfaden, Videos, Open-Source-Tools |
 | `/gesetze` | **Gesetze & Politik**: schematisch Bund → Land → Kommune, mit Links zu Original-Texten |
+| `/versorger` | **Strom, Gas & Internet**: Preisgarantie-Fallstricke, Betrugsmaschen, Glasfaser/Kabel/DSL/LTE-Statistik, Wechsel-Checkliste |
 
 | API | Zweck |
 |---|---|
