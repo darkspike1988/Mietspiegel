@@ -24,6 +24,11 @@ from app.schemas.contracts import (
     WiderspruchRequest,
     WiderspruchResponse,
 )
+from app.schemas.tariff_stats import (
+    SmardTimeStats,
+    TariffObservation,
+    TariffStatisticsResponse,
+)
 from app.schemas.search_agent import (
     RefreshResponse,
     SearchProfile,
