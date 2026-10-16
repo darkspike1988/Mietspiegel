@@ -41,3 +41,36 @@ class TestVerivoxUrls:
     def test_empty_env_returns_none(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.delenv(vp.PARTNER_ID_ENV, raising=False)
         assert vp.get_partner_id() is None
+
+
+class TestIframe:
+    def test_iframe_url_from_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv(vp.IFRAME_URL_ENV, "https://partner.verivox.de/embed?x=1")
+        assert vp.get_iframe_url() == "https://partner.verivox.de/embed?x=1"
+
+    def test_iframe_url_empty(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.delenv(vp.IFRAME_URL_ENV, raising=False)
+        assert vp.get_iframe_url() is None
+
+
+class TestPortalPartnerIds:
+    def test_check24_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("CHECK24_PARTNER_ID", "C24-77")
+        assert vp.get_portal_partner_id("check24") == "C24-77"
+
+    def test_idealo_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("IDEALO_PARTNER_ID", "ID-9")
+        assert vp.get_portal_partner_id("idealo") == "ID-9"
+
+    def test_verivox_via_portal_map(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv(vp.PARTNER_ID_ENV, "VX-1")
+        assert vp.get_portal_partner_id("Verivox") == "VX-1"
+
+    def test_unknown_portal(self) -> None:
+        assert vp.get_portal_partner_id("unbekannt") is None
+
+    def test_unset_returns_none(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        for var in ("CHECK24_PARTNER_ID", "IDEALO_PARTNER_ID", vp.PARTNER_ID_ENV):
+            monkeypatch.delenv(var, raising=False)
+        assert vp.get_portal_partner_id("check24") is None
+        assert vp.get_portal_partner_id("idealo") is None

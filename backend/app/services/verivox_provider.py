@@ -34,12 +34,35 @@ log = structlog.get_logger(__name__)
 # oder direkt über Verivox. Per ENV konfigurierbar:
 #   VERIVOX_PARTNER_ID=IhreID
 PARTNER_ID_ENV = "VERIVOX_PARTNER_ID"
+CHECK24_PARTNER_ID_ENV = "CHECK24_PARTNER_ID"
+IDEALO_PARTNER_ID_ENV = "IDEALO_PARTNER_ID"
 
 
 def get_partner_id() -> str | None:
+    """Verivox-Partner-ID (None = noch nicht registriert)."""
     """Partner-ID aus der Environment lesen (None = noch nicht registriert)."""
     pid = os.environ.get(PARTNER_ID_ENV, "").strip()
     return pid or None
+
+
+def get_portal_partner_id(portal: str) -> str | None:
+    """Partner-ID je Portal (None = nicht registriert, Link ohne Provision).
+
+    Check24: https://www.check24.de/partner/ (eigenes Partnerprogramm,
+    vergleichbare Vergütung wie Verivox)
+    Idealo: Affiliate-Programm über Partnernetzwerke (u.a. Awin /
+    TradeTracker) — Anmeldung über das jeweilige Netzwerk.
+    """
+    env_map = {
+        "verivox": PARTNER_ID_ENV,
+        "check24": CHECK24_PARTNER_ID_ENV,
+        "idealo": IDEALO_PARTNER_ID_ENV,
+    }
+    var = env_map.get(portal.lower())
+    if not var:
+        return None
+    val = os.environ.get(var, "").strip()
+    return val or None
 
 
 def build_tariff_calculator_url(
@@ -83,4 +106,26 @@ def build_tariff_calculator_url(
     }
 
 
-__all__ = ["get_partner_id", "build_tariff_calculator_url", "PARTNER_ID_ENV"]
+IFRAME_URL_ENV = "VERIVOX_IFRAME_URL"
+
+
+def get_iframe_url() -> str | None:
+    """White-Label-iframe-URL aus dem Verivox-Partner-Dashboard (ENV).
+
+    Nach der Freischaltung steht im Partner-Dashboard unter
+    'Werbemittel' der iframe-HTML-Schnipsel — seine src-URL hier
+    eintragen (backend/.env): VERIVOX_IFRAME_URL=https://...
+    Damit rendert /versorger den kompletten Tarifrechner inkl.
+    Abschlussstrecke direkt eingebettet.
+    """
+    url = os.environ.get(IFRAME_URL_ENV, "").strip()
+    return url or None
+
+
+__all__ = [
+    "get_partner_id",
+    "build_tariff_calculator_url",
+    "get_iframe_url",
+    "PARTNER_ID_ENV",
+    "IFRAME_URL_ENV",
+]

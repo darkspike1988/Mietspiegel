@@ -270,6 +270,10 @@ import Donate from "../components/Donate.astro";
           </label>
           <button id="vf-go" type="button">Vergleiche öffnen</button>
         </div>
+        <div id="vf-iframe-box" class="iframe-box" hidden>
+          <p class="hint">⚙️ White-Label-Tarifrechner (Verivox) — direkt hier vergleichen und abschließen:</p>
+          <iframe id="vf-iframe" title="Verivox Tarifrechner" loading="lazy"></iframe>
+        </div>
         <div id="vf-links" class="portal-links" hidden>
           <p><strong>Vergleiche jetzt auf allen Portalen</strong> (mindestens 2 nutzen!):</p>
           <div id="vf-link-list"></div>
@@ -345,6 +349,8 @@ import Donate from "../components/Donate.astro";
   .portal-links a:hover { background: #0055aa; }
   .sparrechner, .strompreise { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px dashed #bbb; }
   .result-box { margin-top: 1rem; padding: 1rem; background: #e8f5e8; border-radius: 8px; font-size: 1.05rem; }
+  .iframe-box { margin-top: 1.2rem; }
+  .iframe-box iframe { width: 100%; min-height: 1400px; border: 1px solid #ccc; border-radius: 8px; background: white; }
 </style>
 
 <script>
@@ -373,6 +379,15 @@ import Donate from "../components/Donate.astro";
       }
       const tip = document.getElementById("vf-tip");
       if (tip) tip.textContent = d.tip as string;
+      const iframeUrl = d.iframe_url as string | null;
+      const iframeBox = document.getElementById("vf-iframe-box");
+      if (iframeUrl && iframeBox) {
+        const frame = document.getElementById("vf-iframe") as HTMLIFrameElement | null;
+        if (frame) {
+          frame.src = iframeUrl;
+          iframeBox.hidden = false;
+        }
+      }
       const box = document.getElementById("vf-links");
       if (box) box.hidden = false;
     } catch (e) { vErr(e instanceof Error ? e.message : String(e)); }

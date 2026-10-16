@@ -327,16 +327,28 @@ async def versorger_vergleiche(postal_code: str, product: str = "strom") -> dict
             ("Check24", "https://www.check24.de/handy-tarif/"),
         ],
     }
+    from app.services import verivox_provider as _vpx
+
     portals = base.get(product, base["strom"])
-    result = [
-        {"portal": name, "url": url + (f"&partner={pid}" if pid and "verivox" in url.lower() else "")}
-        for name, url in portals
-    ]
+    result = []
+    for name, url in portals:
+        portal_pid = _vpx.get_portal_partner_id(name)
+        if portal_pid:
+            sep = "&" if "?" in url else "?"
+            url = f"{url}{sep}partner={portal_pid}"
+        elif name.lower() == "verivox" and pid:
+            sep = "&" if "?" in url else "?"
+            url = f"{url}{sep}partner={pid}"
+        result.append({"portal": name, "url": url})
+    from app.services import verivox_provider as _vp
+
+    iframe_url = _vp.get_iframe_url()
     return {
         "ok": True,
         "product": product,
         "postal_code": plz,
         "vergleiche": result,
+        "iframe_url": iframe_url,
         "tip": (
             "Vergleiche auf mindestens 2 Portalen: Rankings unterscheiden "
             "sich (Provisions-Bias). Prüfe beim günstigsten Tarif: "
