@@ -263,3 +263,40 @@ async def search_results(profile: SearchProfile) -> SearchResultsResponse:
         total_seen=len(seen),
         listings=[],
     )
+
+
+# ----------------------------------------------------------------------
+# Versorger-Tarife (Verivox-Partner-Integration + SMARD-Marktdaten)
+# ----------------------------------------------------------------------
+
+@api_router.get("/versorger/tarifrechner")
+async def versorger_tarifrechner(
+    product: str, postal_code: str
+) -> dict:
+    """Deep-Link zum offiziellen Verivox-Tarifrechner (Strom/Gas/DSL/Mobilfunk).
+
+    Mit gesetzter VERIVOX_PARTNER_ID werden Tracking-Links erzeugt
+    (Provision ~55 €/Sale Strom&Gas); ohne Partner-ID wird der
+    öffentliche Vergleich verlinkt.
+    """
+    from app.services import verivox_provider
+
+    return verivox_provider.build_tariff_calculator_url(product, postal_code)
+
+
+@api_router.get("/versorger/strompreise")
+async def versorger_strompreise() -> dict:
+    """Aktuelle Day-Ahead-Börsenpreise (SMARD/BNetzA, CC BY 4.0) +
+    die 5 günstigsten/teuersten Stunden — für Dynamic-Tariff-Mieter."""
+    from app.services import smard_provider
+
+    prices = await smard_provider.fetch_day_ahead_prices()
+    return {
+        "ok": True,
+        "source": "Bundesnetzagentur SMARD (CC BY 4.0)",
+        "einheit": "EUR/MWh (Börse) — nicht Haushaltspreis",
+        "count": len(prices),
+        "cheapest_hours": smard_provider.cheapest_hours(prices, n=5),
+        "most_expensive_hours": smard_provider.most_expensive_hours(prices, n=5),
+        "series": prices,
+    }
