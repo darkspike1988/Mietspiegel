@@ -2,18 +2,17 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import Annotated
 
 from fastapi import (
     APIRouter,
-    Depends,
     File,
     HTTPException,
     Request,
     UploadFile,
     status,
 )
-from fastapi.responses import JSONResponse
 
 from app.schemas.contracts import (
     CityInfo,
@@ -25,6 +24,11 @@ from app.schemas.contracts import (
     WiderspruchRequest,
     WiderspruchResponse,
 )
+from app.schemas.search_agent import (
+    RefreshResponse,
+    SearchProfile,
+    SearchResultsResponse,
+)
 from app.schemas.tools import (
     KautionCheckRequest,
     KautionCheckResponse,
@@ -35,7 +39,13 @@ from app.schemas.tools import (
     NebenkostenCheckRequest,
     NebenkostenCheckResponse,
 )
-from app.services import pdf_parser, rent_engine, tools_engine, widerspruch
+from app.services import (
+    pdf_parser,
+    rent_engine,
+    search_agent,
+    tools_engine,
+    widerspruch,
+)
 
 api_router = APIRouter()
 
@@ -140,7 +150,7 @@ def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def _validate_lease(raw: dict) -> "ParsedLease":  # type: ignore[name-defined]
+def _validate_lease(raw: dict) -> ParsedLease:  # type: ignore[name-defined]
     from pydantic import ValidationError
 
     from app.schemas.contracts import ParsedLease
@@ -220,3 +230,36 @@ async def tool_kaution_vergleich(
     req: KautionsVergleichRequest,
 ) -> KautionsVergleichResponse:
     return tools_engine.compare_kaution(req)
+
+
+# ----------------------------------------------------------------------
+# Wohnungssuche-Agent (MVP: RSS-Polling + Mietpreis-Badge je Treffer)
+# ----------------------------------------------------------------------
+
+@api_router.post("/search/refresh", response_model=RefreshResponse)
+async def search_refresh(profile: SearchProfile) -> RefreshResponse:
+    """Suchprofil einmal abfragen; neue Treffer werden gegen den
+    Mietspiegel geprüft und (falls TELEGRAM_BOT_TOKEN/CHAT_ID gesetzt)
+    per Telegram benachrichtigt."""
+    fresh, total_seen = await search_agent.refresh_profile(profile)
+    if fresh:
+        await search_agent.notify_telegram(fresh)
+    return RefreshResponse(
+        profile_name=profile.name,
+        new_listings=fresh,
+        total_seen=total_seen,
+        checked_at=datetime.now(UTC).isoformat(),
+    )
+
+
+@api_router.post("/search/results", response_model=SearchResultsResponse)
+async def search_results(profile: SearchProfile) -> SearchResultsResponse:
+    """Alle bekannten Treffer eines Profils (aus dem Seen-Store)."""
+    from app.services.search_agent import _seen
+
+    seen = _seen.get(profile.name, {})
+    return SearchResultsResponse(
+        profile_name=profile.name,
+        total_seen=len(seen),
+        listings=[],
+    )
