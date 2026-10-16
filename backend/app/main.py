@@ -10,6 +10,7 @@ FastAPI application exposing:
 
 from __future__ import annotations
 
+import os
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
@@ -40,7 +41,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         ttl_seconds=settings.cache_ttl_seconds,
     )
     await app.state.cache.connect()
+    if os.environ.get("SEARCH_SCHEDULER_ENABLED", "1") == "1":
+        from app.services import scheduler
+        scheduler.start()
     yield
+    from app.services import scheduler
+    scheduler.stop()
     await app.state.cache.disconnect()
     await app.state.mistral.close()
 

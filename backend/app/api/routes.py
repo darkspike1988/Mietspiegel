@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timezone
 from typing import Annotated
 
+from pydantic import BaseModel
 from fastapi import (
     APIRouter,
     File,
@@ -30,6 +31,7 @@ from app.schemas.tariff_stats import (
     TariffStatisticsResponse,
 )
 from app.schemas.search_agent import (
+    Provider,
     RefreshResponse,
     SearchProfile,
     SearchResultsResponse,
@@ -415,3 +417,85 @@ async def versorger_strompreise_statistik() -> SmardTimeStats:
 
     prices = await smard_provider.fetch_day_ahead_prices()
     return tariff_stats.aggregate_smard_by_time(prices)
+
+
+# ----------------------------------------------------------------------
+# Suchprofil-Verwaltung (persistiert in SQLite)
+# ----------------------------------------------------------------------
+
+
+class ProfileCreateRequest(SearchProfile):
+    """Suchprofil anlegen (Name + URL, Provider wird automatisch erkannt)."""
+
+
+class ProfileListResponse(BaseModel):
+    ok: bool = True
+    profiles: list[dict]
+
+
+@api_router.post("/search/profiles", status_code=201)
+async def create_search_profile(req: SearchProfile) -> dict:
+    """Suchprofil persistent anlegen (SQLite) — der Scheduler und
+    /search/refresh/{id} nutzen es."""
+    from app.services import storage
+
+    pid = storage.save_profile(
+        name=req.name, url=str(req.url), provider=req.provider.value,
+        city=req.city,
+    )
+    return {"ok": True, "profile_id": pid, "name": req.name}
+
+
+@api_router.get("/search/profiles", response_model=ProfileListResponse)
+async def list_search_profiles() -> ProfileListResponse:
+    from app.services import storage
+
+    return ProfileListResponse(profiles=storage.list_profiles())
+
+
+@api_router.post("/search/refresh/{profile_id}", response_model=RefreshResponse)
+async def refresh_profile_by_id(profile_id: int) -> RefreshResponse:
+    """Persistiertes Suchprofil abfragen: neue Treffer (SQLite-Dedup)
+    werden geprüft, archiviert und ggf. per Telegram benachrichtigt."""
+    from app.services import storage
+
+    row = storage.get_profile(profile_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail=f"Profil {profile_id} nicht gefunden")
+    profile = SearchProfile(
+        name=row["name"], url=row["url"],
+        provider=Provider(row["provider"] or "rss"), city=row["city"],
+    )
+    fresh, total_seen = await search_agent.refresh_profile(profile, profile_id)
+    if fresh:
+        await search_agent.notify_telegram(fresh)
+    return RefreshResponse(
+        profile_name=profile.name,
+        new_listings=fresh,
+        total_seen=total_seen,
+        checked_at=datetime.now(timezone.utc).isoformat(),
+    )
+
+
+@api_router.get("/search/listings/{profile_id}", response_model=SearchResultsResponse)
+async def archived_listings(profile_id: int, limit: int = 100) -> SearchResultsResponse:
+    """Archivierte Treffer eines Profils (SQLite, neueste zuerst)."""
+    from app.services import storage
+
+    row = storage.get_profile(profile_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail=f"Profil {profile_id} nicht gefunden")
+    from app.schemas.search_agent import CheckedListing
+
+    raw = storage.list_listings(profile_id, limit=limit)
+    listings = []
+    for item in raw:
+        try:
+            listings.append(CheckedListing.model_validate(item))
+        except Exception:
+            continue
+    return SearchResultsResponse(
+        profile_name=row["name"],
+        total_seen=storage.count_listings(profile_id),
+        listings=listings,
+    )

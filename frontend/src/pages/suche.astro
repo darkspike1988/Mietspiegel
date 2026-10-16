@@ -53,6 +53,33 @@ import Donate from "../components/Donate.astro";
       </ol>
     </section>
 
+    <!-- ============ SUCH-AGENT UI ============ -->
+    <section id="agent-ui">
+      <h2>🤖 Dein Such-Agent — jetzt nutzen</h2>
+      <p class="hint">
+        Such-URL aus dem Portal kopieren (ImmoScout / Immowelt / Kleinanzeigen /
+        WG-Gesucht wird automatisch erkannt) → Profil speichern → auf Klick prüfen
+        (oder automatisch alle 10 Minuten). Neue Treffer mit Mietpreis-Badge.
+      </p>
+      <div class="agent-box">
+        <h3>Profil anlegen</h3>
+        <label> Name
+          <input type="text" id="sp-name" placeholder="Berlin 2-Zimmer bis 1000 €" />
+        </label>
+        <label> Such-URL (aus dem Portal kopieren)
+          <input type="url" id="sp-url" placeholder="https://www.immobilienscout24.de/Suche/de/berlin/berlin/wohnung-mieten?price=-1000.0" />
+        </label>
+        <button id="sp-save" type="button">Profil speichern</button>
+        <p class="hint" id="sp-saved" hidden></p>
+        <h3>Deine Profile</h3>
+        <div id="sp-list"></div>
+        <div id="sp-results" hidden>
+          <h3 id="sp-results-title">Ergebnisse</h3>
+          <div id="sp-listings"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- ============ GEPLAN SUCH-AGENT ============ -->
     <section id="agent">
       <h2>🤖 Unser geplanter Such-Agent (Roadmap)</h2>
@@ -181,4 +208,128 @@ import Donate from "../components/Donate.astro";
   .tips li { margin-bottom: 0.5rem; line-height: 1.45; }
   .steps li { margin-bottom: 0.9rem; line-height: 1.5; }
   footer { text-align: center; padding: 2rem; color: #888; font-size: 0.85rem; }
+  .agent-box { background: #f4f8ff; border-radius: 12px; padding: 1.5rem; margin-top: 1rem; }
+  .agent-box label { display: block; margin: 0.6rem 0; font-size: 0.9rem; }
+  .agent-box input { width: 100%; padding: 0.55rem; border: 1px solid #bbb; border-radius: 6px; font-size: 0.95rem; box-sizing: border-box; }
+  .agent-box button { padding: 0.6rem 1.2rem; background: #0066cc; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; margin-top: 0.5rem; }
+  .agent-box button:hover { background: #0055aa; }
+  .profile-card { display: flex; gap: 0.7rem; align-items: center; flex-wrap: wrap; background: white; padding: 0.7rem 1rem; border-radius: 8px; margin: 0.4rem 0; }
+  .profile-card .p-name { font-weight: 600; }
+  .profile-card .p-url { color: #666; font-size: 0.8rem; flex: 1; min-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .profile-card button { margin-top: 0 !important; padding: 0.35rem 0.8rem !important; font-size: 0.85rem !important; }
+  .listing-row { background: white; border-radius: 8px; padding: 0.7rem 1rem; margin: 0.4rem 0; font-size: 0.92rem; }
+  .listing-row a { color: #0066cc; text-decoration: none; font-weight: 600; }
+  .badge-sm { font-weight: 700; }
 </style>
+
+<script>
+  const SB = (import.meta.env.PUBLIC_BACKEND_URL as string | undefined) ?? "http://localhost:8765";
+  const badgeEmoji = (v: string): string =>
+    ({ fair: "✅", tolerance: "🟡", brake: "🟠", wucher: "🔴", unknown: "⚪" } as Record<string, string>)[v] ?? "⚪";
+
+  type Profile = { id: number; name: string; url: string; city: string | null };
+  type Listing = {
+    title: string; url: string | null; cold_rent_eur: number | null;
+    size_sqm: number | null; postal_code: string | null;
+    source: string; rent_badge: string; delta_percent: number | null;
+  };
+
+  async function loadProfiles(): Promise<void> {
+    try {
+      const r = await fetch(`${SB}/api/search/profiles`);
+      if (!r.ok) return;
+      const d = await r.json();
+      const box = document.getElementById("sp-list");
+      if (!box) return;
+      const profiles = d.profiles as Profile[];
+      box.innerHTML = profiles.length === 0
+        ? '<p class="hint">Noch keine Profile — lege oben eines an.</p>'
+        : profiles.map((p) => `
+          <div class="profile-card">
+            <span class="p-name">📁 ${p.name}</span>
+            <span class="p-url" title="${p.url}">${p.url}</span>
+            <button onclick="window.__refreshProfile(${p.id})" type="button">🔄 Jetzt prüfen</button>
+            <button onclick="window.__showListings(${p.id})" type="button">📋 Treffer</button>
+          </div>`).join("");
+    } catch {
+      /* Backend nicht erreichbar */
+    }
+  }
+
+  window.__refreshProfile = async (id: number): Promise<void> => {
+    const out = document.getElementById("sp-saved");
+    try {
+      const r = await fetch(`${SB}/api/search/refresh/${id}`, { method: "POST" });
+      const d = await r.json();
+      if (out) {
+        out.textContent = `✅ ${d.profile_name}: ${(d.new_listings as Listing[]).length} neue Treffer (insgesamt ${d.total_seen} archiviert)`;
+        out.hidden = false;
+      }
+      if ((d.new_listings as Listing[]).length > 0) {
+        renderListings(d.new_listings, `${d.profile_name} — neue Treffer`);
+      } else {
+        renderListings([], `${d.profile_name} — keine neuen Treffer (alle bekannt)`);
+      }
+    } catch (e) {
+      if (out) { out.textContent = `⚠️ ${e instanceof Error ? e.message : String(e)}`; out.hidden = false; }
+    }
+  };
+
+  window.__showListings = async (id: number): Promise<void> => {
+    try {
+      const r = await fetch(`${SB}/api/search/listings/${id}`);
+      if (!r.ok) return;
+      const d = await r.json();
+      renderListings(d.listings as Listing[], `${d.profile_name} — alle Treffer (${d.total_seen})`);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  function renderListings(listings: Listing[], title: string): void {
+    const res = document.getElementById("sp-results");
+    const box = document.getElementById("sp-listings");
+    const head = document.getElementById("sp-results-title");
+    if (!res || !box || !head) return;
+    head.textContent = title;
+    box.innerHTML = listings.length === 0
+      ? "<p class='hint'>Keine (neuen) Treffer.</p>"
+      : listings.map((l) => {
+          const price = l.cold_rent_eur != null ? `${l.cold_rent_eur.toFixed(0)} €` : "?";
+          const sqm = l.size_sqm != null ? `${l.size_sqm.toFixed(0)} m²` : "?";
+          const delta = l.delta_percent != null ? ` (${l.delta_percent > 0 ? "+" : ""}${l.delta_percent.toFixed(0)}%)` : "";
+          return `
+            <div class="listing-row">
+              <span class="badge-sm">${badgeEmoji(l.rent_badge)}</span>
+              ${l.url ? `<a href="${l.url}" target="_blank" rel="noopener noreferrer">${l.title.slice(0, 70)}</a>` : l.title.slice(0, 70)}
+              <span>· ${price} · ${sqm}${l.postal_code ? ` · ${l.postal_code}` : ""} · ${l.source}${delta}</span>
+            </div>`;
+        }).join("");
+    res.hidden = false;
+  }
+
+  document.getElementById("sp-save")?.addEventListener("click", async () => {
+    const name = (document.getElementById("sp-name") as HTMLInputElement | null)?.value?.trim() ?? "";
+    const url = (document.getElementById("sp-url") as HTMLInputElement | null)?.value?.trim() ?? "";
+    const out = document.getElementById("sp-saved");
+    if (!name || !url) {
+      if (out) { out.textContent = "⚠️ Name und URL bitte ausfüllen."; out.hidden = false; }
+      return;
+    }
+    try {
+      const r = await fetch(`${SB}/api/search/profiles`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, url }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.detail || `HTTP ${r.status}`);
+      if (out) { out.textContent = `✅ Profil '${d.name}' gespeichert — jetzt 'Jetzt prüfen' klicken!`; out.hidden = false; }
+      await loadProfiles();
+    } catch (e) {
+      if (out) { out.textContent = `⚠️ ${e instanceof Error ? e.message : String(e)}`; out.hidden = false; }
+    }
+  });
+
+  loadProfiles();
+</script>

@@ -301,6 +301,30 @@ import Donate from "../components/Donate.astro";
           <button id="sr-go" type="button">Ersparnis berechnen</button>
           <div id="sr-result" class="result-box" hidden><div id="sr-output"></div></div>
         </div>
+        <div class="beobachtungen">
+          <h3>📊 Preis-Beobachtung eintragen → Portal-Statistik</h3>
+          <p class="hint">Lies aus den Portalen den günstigsten ct/kWh-Preis ab und trage ihn je Portal ein — die Statistik rechnet, wer wirklich am günstigsten ist (Median, robust gegen Lock-Angebote).</p>
+          <div class="grid">
+            <label> Portal
+              <select id="ob-portal">
+                <option value="verivox">Verivox</option>
+                <option value="check24">Check24</option>
+                <option value="idealo">Idealo</option>
+                <option value="anbieter">Anbieter direkt</option>
+              </select>
+            </label>
+            <label> Tarifname
+              <input type="text" id="ob-name" placeholder="z.B. ÖkoStrom 12" />
+            </label>
+            <label> ct/kWh
+              <input type="number" id="ob-ct" step="0.01" min="0" />
+            </label>
+          </div>
+          <button id="ob-go" type="button">Beobachtung speichern</button>
+          <button id="ob-stats" type="button" style="margin-left: 0.5rem;">📊 Statistik anzeigen</button>
+          <div id="ob-result" class="result-box" hidden></div>
+        </div>
+
         <div class="strompreise">
           <h3>📉 Aktueller Börsenstrompreis (SMARD / BNetzA)</h3>
           <p class="hint">Für Dynamic-Tariff-Mieter: Wann ist Strom aktuell günstig?</p>
@@ -427,6 +451,56 @@ import Donate from "../components/Donate.astro";
       const box = document.getElementById("sr-result");
       if (box) box.hidden = false;
     } catch (e) { vErr(e instanceof Error ? e.message : String(e)); }
+  });
+
+  // ---- Tarif-Beobachtung + Statistik ----
+  document.getElementById("ob-go")?.addEventListener("click", async () => {
+    const plz = (document.getElementById("vf-plz") as HTMLInputElement | null)?.value?.trim() ?? "";
+    const product = (document.getElementById("vf-product") as HTMLSelectElement | null)?.value ?? "strom";
+    const portal = (document.getElementById("ob-portal") as HTMLSelectElement | null)?.value ?? "verivox";
+    const name = (document.getElementById("ob-name") as HTMLInputElement | null)?.value?.trim() ?? "";
+    const ct = parseFloat((document.getElementById("ob-ct") as HTMLInputElement | null)?.value ?? "0") || 0;
+    const out = document.getElementById("ob-result");
+    if (!/^\d{5}$/.test(plz)) { if (out) { out.textContent = "⚠️ Bitte oben eine gültige PLZ eingeben."; out.hidden = false; } return; }
+    if (!name || ct <= 0) { if (out) { out.textContent = "⚠️ Tarifname und ct/kWh bitte ausfüllen."; out.hidden = false; } return; }
+    try {
+      const r = await fetch(`${VBACKEND}/api/versorger/beobachtung`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ portal, product, postal_code: plz, tariff_name: name, ct_per_kwh: ct }),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      if (out) { out.textContent = `✅ Beobachtung gespeichert: ${portal} · ${name} · ${ct} ct/kWh`; out.hidden = false; }
+      (document.getElementById("ob-name") as HTMLInputElement).value = "";
+      (document.getElementById("ob-ct") as HTMLInputElement).value = "";
+    } catch (e) {
+      if (out) { out.textContent = `⚠️ ${e instanceof Error ? e.message : String(e)}`; out.hidden = false; }
+    }
+  });
+
+  document.getElementById("ob-stats")?.addEventListener("click", async () => {
+    const plz = (document.getElementById("vf-plz") as HTMLInputElement | null)?.value?.trim() ?? "";
+    const product = (document.getElementById("vf-product") as HTMLSelectElement | null)?.value ?? "strom";
+    const out = document.getElementById("ob-result");
+    if (!/^\d{5}$/.test(plz)) { if (out) { out.textContent = "⚠️ Bitte oben eine gültige PLZ eingeben."; out.hidden = false; } return; }
+    try {
+      const r = await fetch(`${VBACKEND}/api/versorger/statistik?product=${product}&postal_code=${plz}`);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const d = await r.json();
+      type Rank = { portal: string; observation_count: number; min_ct_kwh: number | null; median_ct_kwh: number | null; avg_ct_kwh: number | null; cheapest_tariff: string | null };
+      if (out) {
+        const rows = (d.ranking as Rank[]).map((s, i) =>
+          `<tr><td>${i + 1}.</td><td>${s.portal}</td><td>${s.observation_count}</td><td>${s.min_ct_kwh ?? "—"}</td><td><strong>${s.median_ct_kwh ?? "—"}</strong></td><td>${s.avg_ct_kwh ?? "—"}</td><td>${s.cheapest_tariff ?? ""}</td></tr>`
+        ).join("");
+        out.innerHTML = `
+          <p><strong>Portal-Ranking</strong> (${d.observation_count} Beobachtungen für ${product} ${plz}):</p>
+          ${rows ? `<table style="width:100%; border-collapse:collapse; font-size:0.9rem;"><tr style="background:#eee"><th>#</th><th>Portal</th><th>n</th><th>min ct</th><th>Median ct</th><th>Ø ct</th><th>Günstigster Tarif</th></tr>${rows}</table>` : ""}
+          <p class="hint">${d.insight as string}</p>`;
+        out.hidden = false;
+      }
+    } catch (e) {
+      if (out) { out.textContent = `⚠️ ${e instanceof Error ? e.message : String(e)}`; out.hidden = false; }
+    }
   });
 
   // ---- SMARD Live-Strompreise ----

@@ -181,8 +181,9 @@ bleiben kostenlos. Wenn dir das Projekt hilft:
 | `/werkzeuge` | Nebenkosten · Kaution · Mieterhöhung · **Kautionsanbieter-Vergleich** |
 | `/handbuch` | **Handbuch Mietwucher**: Erkennen, Maschen großer Konzerne, Klage-Leitfaden, Videos, Open-Source-Tools |
 | `/gesetze` | **Gesetze & Politik**: schematisch Bund → Land → Kommune, mit Links zu Original-Texten |
-| `/versorger` | **Strom, Gas & Internet**: Preisgarantie-Fallstricke, Betrugsmaschen, Glasfaser/Kabel/DSL/LTE-Statistik, Wechsel-Checkliste |
-| `/suche` | **Wohnungssuche-Strategie** + Roadmap: Open-Source-Multi-Portal-Such-Agent (ImmoScout/Immowelt/Kleinanzeigen/WG-Gesucht), Duplikat-Erkennung, integrierter Mietpreis-Check, Mietbetrugs-Warnungen |
+| `/versorger` | **Strom, Gas & Internet**: Tarif-Finder (PLZ → Verivox+Check24+Idealo auf einen Klick), Sparrechner, Preis-Beobachtungen + Portal-Ranking-Statistik (Median), SMARD-Live-Strompreise (Börsenpreis je Stunde/Wochentag) — siehe **Preisgarantie-Fallstricke, Betrugsmaschen, Glasfaser/Kabel/DSL/LTE-Statistik, Wechsel-Checkliste |
+| `/suche` | **Wohnungssuche-Strategie + Such-Agent-UI**: Profile anlegen (Such-URL aus ImmoScout/Immowelt/Kleinanzeigen/WG-Gesucht einfügen), Live-Refresh mit Mietpreis-Badges (✅🟡🟠🔴), persistente Treffer-Liste, automatisches 10-Min-Polling + Telegram-Push |
+ + Roadmap: Open-Source-Multi-Portal-Such-Agent (ImmoScout/Immowelt/Kleinanzeigen/WG-Gesucht), Duplikat-Erkennung, integrierter Mietpreis-Check, Mietbetrugs-Warnungen |
 | `/wohnalltag` | **Handwerker, Umzugsfirmen & Hausordnungen**: Reparaturpflichten, Umzugs-Abzockmaschen, unwirksame Hausordnungs-Klauseln, GEZ, Schimmel-Minderung, Haustiere, Untervermietung, Übergabeprotokoll |
 
 | API | Zweck |
@@ -191,6 +192,13 @@ bleiben kostenlos. Wenn dir das Projekt hilft:
 | `POST /api/tools/kaution` | Kaution prüfen (§551 BGB) |
 | `POST /api/tools/kaution/vergleich` | **Kautionsbürgschaft-Anbieter vergleichen** (Daten: `data/processed/kautionsanbieter.json`, quartalsweise aktualisieren) |
 | `POST /api/tools/mieterhoehung` | Mieterhöhung prüfen (§558 BGB) |
+| `POST /api/tools/sparrechner` | Versorger-Sparpotenzial (Grundversorger vs. Tarif) |
+| `POST /api/search/profiles` | Suchprofil persistent anlegen (SQLite) |
+| `POST /api/search/refresh/{id}` | Profil abfragen: neue Treffer + Badge + Archiv + Telegram |
+| `GET /api/search/listings/{id}` | Archivierte Treffer mit Badges |
+| `POST /api/versorger/beobachtung` | Anonyme Preis-Beobachtung speichern |
+| `GET /api/versorger/statistik` | Portal-Ranking nach Median |
+| `GET /api/versorger/strompreise/statistik` | SMARD: günstigste/teuerste Stunde + Wochentag |
 
 ## Lizenz
 

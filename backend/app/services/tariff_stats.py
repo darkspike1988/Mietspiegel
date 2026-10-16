@@ -26,21 +26,52 @@ from app.schemas.tariff_stats import (
 
 log = structlog.get_logger(__name__)
 
-_observations: list[TariffObservation] = []
-
-
 def add_observation(obs: TariffObservation) -> TariffObservation:
-    """Beobachtung speichern (anonym, in-memory)."""
-    _observations.append(obs)
+    """Beobachtung persistieren (SQLite, anonym — keine PII)."""
+    from app.services import storage
+
+    storage.save_observation(
+        portal=obs.portal.value,
+        product=obs.product,
+        postal_code=obs.postal_code,
+        tariff_name=obs.tariff_name,
+        ct_per_kwh=obs.ct_per_kwh,
+        base_fee_eur=obs.base_fee_eur_per_year,
+        bonus_eur=obs.bonus_eur_first_year,
+        observed_at=obs.observed_at.isoformat(),
+    )
     return obs
 
 
 def get_observations(product: str, postal_code: str) -> list[TariffObservation]:
-    """Alle Beobachtungen für Produkt+PLZ."""
-    return [
-        o for o in _observations
-        if o.product == product and o.postal_code == postal_code
-    ]
+    """Alle persistenten Beobachtungen für Produkt+PLZ."""
+    from app.services import storage
+
+    rows = storage.load_observations(product, postal_code)
+    result = []
+    for r in rows:
+        try:
+            result.append(TariffObservation(
+                portal=Portal(r["portal"]),
+                product=r["product"],
+                postal_code=r["postal_code"],
+                tariff_name=r["tariff_name"],
+                ct_per_kwh=r["ct_per_kwh"],
+                base_fee_eur_per_year=r.get("base_fee_eur_per_year") or 0,
+                bonus_eur_first_year=r.get("bonus_eur_first_year") or 0,
+                observed_at=_parse_dt(r["observed_at"]),
+            ))
+        except (ValueError, KeyError):
+            continue
+    return result
+
+
+def _parse_dt(iso: str):
+    from datetime import datetime
+    try:
+        return datetime.fromisoformat(iso)
+    except ValueError:
+        return datetime.now().astimezone()
 
 
 def _stats_for_portal(portal: str, obs: list[TariffObservation]) -> PortalStats:
@@ -182,5 +213,7 @@ def aggregate_smard_by_time(prices: list[dict]) -> SmardTimeStats:
 
 
 def reset_store() -> None:
-    """Test-Hook: Beobachtungs-Speicher leeren."""
-    _observations.clear()
+    """Test-Hook: Beobachtungs-Tabelle leeren."""
+    from app.services import storage
+
+    storage.reset_db_for_tests()

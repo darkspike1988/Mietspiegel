@@ -39,7 +39,7 @@ log = structlog.get_logger(__name__)
 
 POLL_INTERVAL_SECONDS = 300
 
-_seen: dict[str, dict[str, str]] = {}
+_seen: dict[str, dict[str, str]] = {}  # Fallback ohne Profil-ID (Legacy)
 
 USER_AGENT = (
     "Mozilla/5.0 (X11; Linux x86_64) MietspiegelAI-SearchAgent/0.1 "
@@ -256,27 +256,48 @@ def _check_listing(listing: Listing) -> CheckedListing:
 
 
 async def refresh_profile(
-    profile: SearchProfile,
+    profile: SearchProfile, profile_id: int | None = None
 ) -> tuple[list[CheckedListing], int]:
     """Profil abfragen, neue Treffer identifizieren + prüfen.
 
+    Mit profile_id wird der Dedup-Status in SQLite persistiert
+    (überlebt Restarts); ohne fällt der In-Memory-Store zurück.
+
     Returns (neue geprüfte Treffer, Gesamtzahl gesehener Treffer).
     """
+    from app.services import storage
+
     try:
         listings = await fetch_profile(profile)
     except (httpx.HTTPError, httpx.InvalidURL) as e:
         log.warning("fetch_failed", profile=profile.name, error=str(e))
+        if profile_id is not None:
+            return [], storage.count_listings(profile_id)
         return [], len(_seen.get(profile.name, {}))
 
+    if profile_id is not None:
+        fresh: list[CheckedListing] = []
+        for listing in listings:
+            key = listing.dedup_key()
+            if storage.is_seen(profile_id, key):
+                continue
+            checked = _check_listing(listing)
+            storage.save_seen_listing(
+                profile_id, key, checked.model_dump(mode="json")
+            )
+            fresh.append(checked)
+        return fresh, storage.count_listings(profile_id)
+
+    # Legacy-Pfad ohne Persistenz
     seen = _seen.setdefault(profile.name, {})
-    fresh: list[CheckedListing] = []
+    fresh_mem: list[CheckedListing] = []
     for listing in listings:
         key = listing.dedup_key()
         if key in seen:
             continue
         seen[key] = listing.first_seen_at
-        fresh.append(_check_listing(listing))
-    return fresh, len(seen)
+        fresh_mem.append(_check_listing(listing))
+    return fresh_mem, len(seen)
 
 
 # ----------------------------------------------------------------------
