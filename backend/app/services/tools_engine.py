@@ -13,7 +13,7 @@ hallucination risk, no API key required, free to use.
 from __future__ import annotations
 
 import json
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 from app.schemas.tools import (
@@ -31,6 +31,25 @@ from app.schemas.tools import (
 )
 
 STATEMENT_DEADLINE_DAYS = 365  # §556 Abs. 3 BGB: 12 Monate nach Periodenende
+
+
+def _end_of_month(year: int, month: int) -> date:
+    """Letzter Tag des Monats (korrekt für 28/29/30/31-Tage-Monate)."""
+    if month == 12:
+        return date(year, 12, 31)
+    return date(year, month + 1, 1) - timedelta(days=1)
+
+
+def _deadline(period_end: date) -> date:
+    """§556 Abs. 3 BGB-Frist: 12 Monate nach Periodenende.
+
+    period_end + 1 Jahr, geklemmt auf das Monatsende (31.12. -> 31.12.,
+    30.06. -> 30.06., 29.02. korrekt im Schaltjahr).
+    """
+    try:
+        return period_end.replace(year=period_end.year + 1)
+    except ValueError:  # 29.02. in Nicht-Schaltjahr
+        return _end_of_month(period_end.year + 1, 2)
 SPERRFRIST_MONTHS = 15  # §558 Abs. 1 BGB
 KAPPUNG_PERCENT = 15.0  # §558 Abs. 3 BGB
 DEPOSIT_MAX_MONTHS = 3  # §551 Abs. 1 BGB
@@ -60,11 +79,7 @@ def check_nebenkosten(req: NebenkostenCheckRequest) -> NebenkostenCheckResponse:
         ))
 
     # --- 2. 12-Monats-Frist (§556 Abs. 3 BGB) ---
-    deadline = date(
-        req.period_end.year + 1,
-        req.period_end.month,
-        min(req.period_end.day, 28),
-    )
+    deadline = _deadline(req.period_end)
     deadline_ok = True
     deadline_missed_by_days: int | None = None
     if req.statement_date is not None:

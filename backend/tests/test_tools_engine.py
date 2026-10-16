@@ -270,3 +270,32 @@ class TestMieterhoehung:
                 current_cold_rent_eur=1000,
                 proposed_cold_rent_eur=900,
             )
+
+
+class TestDeadlineEdgeCases:
+    """Bugfix-Tests: §556-Abs.3-Frist bei Monatsenden (31./30./29.02.)."""
+
+    def test_deadline_31_dec_is_31_dec_next_year(self) -> None:
+        from app.services.tools_engine import _deadline
+        assert _deadline(date(2024, 12, 31)) == date(2025, 12, 31)
+
+    def test_deadline_30_jun_is_30_jun_next_year(self) -> None:
+        from app.services.tools_engine import _deadline
+        assert _deadline(date(2024, 6, 30)) == date(2025, 6, 30)
+
+    def test_deadline_feb_29_leap_year(self) -> None:
+        from app.services.tools_engine import _deadline
+        assert _deadline(date(2024, 2, 29)) == date(2025, 2, 28)
+
+    def test_statement_on_period_end_month_next_year_is_ok(self) -> None:
+        req = NebenkostenCheckRequest(
+            period_start=date(2024, 1, 1),
+            period_end=date(2024, 10, 31),
+            statement_date=date(2025, 10, 31),
+            items=[],
+            total_advance_payments_eur=500,
+            invoiced_total_eur=500,
+            claimed_balance_eur=0,
+        )
+        resp = tools_engine.check_nebenkosten(req)
+        assert resp.deadline_ok

@@ -17,9 +17,10 @@ ALWAYS:
 from __future__ import annotations
 
 import json
+
 import structlog
 
-from app.integrations.mistral import MistralClient
+from app.integrations.mistral import MistralClient, MistralError
 from app.schemas.contracts import (
     WiderspruchRequest,
     WiderspruchResponse,
@@ -84,10 +85,14 @@ async def generate_widerspruch(
         schema_hint=OUTPUT_SCHEMA,
     )
 
-    # Defensive defaults
+    subject = str(parsed.get("subject") or "Widerspruch gegen die Miethöhe")
+    body = str(parsed.get("body") or "")
+    if not body.strip():
+        log.error("widerspruch_body_empty", raw_keys=list(parsed.keys()))
+        raise MistralError("Widerspruchsgenerierung lieferte einen leeren Brieftext")
     return WiderspruchResponse(
-        subject=str(parsed.get("subject", "Widerspruch gegen die Miethöhe")),
-        body=str(parsed.get("body", "")),
-        references=list(parsed.get("references", [])),
-        next_steps=list(parsed.get("next_steps", [])),
+        subject=subject,
+        body=body,
+        references=[str(r) for r in parsed.get("references", [])],
+        next_steps=[str(s) for s in parsed.get("next_steps", [])],
     )

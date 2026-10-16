@@ -161,5 +161,11 @@ class MistralClient:
             raise MistralError(f"OCR API {resp.status_code}: {resp.text[:200]}")
 
         result = resp.json()
-        # Defensive: actual response shape varies; assume 'text' field for now.
+        # Mistral OCR liefert pages[].markdown (offizielles API-Format).
+        # Fallback auf Legacy-Felder für den Fall einer API-Änderung.
+        pages = result.get("pages") or []
+        if pages:
+            return "\n\n".join(
+                str(page.get("markdown", "")) for page in pages
+            )
         return str(result.get("text", result.get("content", "")))
