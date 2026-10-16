@@ -183,6 +183,15 @@ async def fetch_profile(profile: SearchProfile) -> list[Listing]:
     if "immobilienscout24" in url:
         from app.services import immoscout_provider
         return await immoscout_provider.fetch_listings(url)
+    if "kleinanzeigen" in url:
+        from app.services import kleinanzeigen_provider
+        return await kleinanzeigen_provider.fetch_listings(url)
+    if "wg-gesucht" in url:
+        from app.services import wggesucht_provider
+        return await wggesucht_provider.fetch_listings(url)
+    if "immowelt" in url:
+        from app.services import immowelt_provider
+        return await immowelt_provider.fetch_listings(url)
 
     headers = {"User-Agent": USER_AGENT}
     async with httpx.AsyncClient(
