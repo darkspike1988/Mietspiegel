@@ -1,0 +1,47 @@
+---
+/**
+ * Nav — gemeinsame Hauptnavigation auf allen Seiten.
+ * Ersetzt die/Footer-Link-Sammlungen durch eine echte, konsistente Navbar.
+ */
+const links = [
+  { href: "/", label: "🏠 Start" },
+  { href: "/werkzeuge", label: "🛠️ Werkzeuge" },
+  { href: "/suche", label: "🔎 Wohnungssuche" },
+  { href: "/handbuch", label: "📕 Handbuch" },
+  { href: "/gesetze", label: "⚖️ Gesetze" },
+  { href: "/versorger", label: "🔌 Versorger" },
+  { href: "/wohnalltag", label: "🔧 Wohnalltag" },
+];
+const current = Astro.url.pathname.replace(/\/index\.html$/, "/").replace(/\/$/, "") || "/";
+const isActive = (href: string) =>
+  href === "/" ? current === "/" : current.startsWith(href);
+---
+<nav class="topnav">
+  <a class="brand" href="/">Mietspiegel-AI</a>
+  {links.map((l) => (
+    <a href={l.href} class:list={[{ active: isActive(l.href) }]}>{l.label}</a>
+  ))}
+</nav>
+
+<style>
+  .topnav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+    background: #1a2a3a;
+    font-size: 0.95rem;
+  }
+  .topnav a {
+    color: #d0d8e0;
+    text-decoration: none;
+    padding: 0.3rem 0.55rem;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .topnav a:hover { color: #fff; background: #2c3e50; }
+  .topnav a.active { color: #fff; background: #0066cc; }
+  .brand { font-weight: 700; color: #fff !important; }
+</style>

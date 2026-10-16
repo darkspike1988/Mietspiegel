@@ -1,0 +1,184 @@
+---
+/**
+ * Wohnungssuche-Strategie + Roadmap für den Multi-Portal-Such-Agenten.
+ * Praktisch für Mieter UND Mietsuchende: wie findet man günstig Wohnungen —
+ * und was unser geplanter Open-Source-Such-Agent darüber hinaus tun wird.
+ */
+import Layout from "../layouts/Layout.astro";
+import Nav from "../components/Nav.astro";
+import Donate from "../components/Donate.astro";
+---
+<Layout title="Günstig Wohnungen finden — Such-Strategie & geplanter Such-Agent">
+  <Nav />
+  <header>
+    <h1>🔎 Günstig Wohnungen finden — die komplette Strategie</h1>
+    <p class="lede">
+      Der Markt ist schnell: Gute Objekte sind oft nach Stunden weg. Hier
+      lernst du das Spiel — und wir bauen einen <strong>freien Open-Source-
+      Such-Agenten</strong>, der dir die Arbeit abnimmt.
+    </p>
+  </header>
+
+  <main class="suche">
+    <!-- ============ WARUM SO SCHNELL REAGIEREN ============ -->
+    <section id="strategie">
+      <h2>⚡ Die 5 Hebel der erfolgreichen Wohnungssuche</h2>
+      <ol class="steps">
+        <li>
+          <strong>Alle Portale gleichzeitig</strong>: ImmoScout24 (größte
+          Auswahl), Immowelt + Immonet (2. Wahl-Pool, weniger Konkurrenz),
+          Kleinanzeigen (private Vermieter, oft günstiger!), WG-Gesucht,
+          Wohnungsbaugesellschaften direkt (Howoge, Gewobag, GAG …).
+        </li>
+        <li>
+          <strong>Suchaufträge mit Push-Benachrichtigung</strong> einrichten —
+          E-Mail-Benachrichtigungen kommen gebündelt und zu spät. Minuten
+          entscheiden, wer die Wohnung bekommt.
+        </li>
+        <li>
+          <strong>1–2 Stunden Reaktionsfenster</strong>: Wer zuerst antwortet,
+          bekommt den Besichtigungstermin. Bewerbungsmappe (SCHUFA,
+          Gehaltsnachweis, Mieterselbstauskunft) <em>vorbereitet</em> halten.
+        </li>
+        <li>
+          <strong>Duplikate erkennen</strong>: Dieselbe Wohnung läuft oft
+          parallel auf mehreren Portalen — teils mit unterschiedlichen
+          Preisen. Immer die günstigste Variante kontaktieren.
+        </li>
+        <li>
+          <strong>Wohnungsbaugesellschaften & Genossenschaften</strong> direkt
+          anschreiben — deren Objekte tauchen selten auf Portalen auf, sind
+          aber oft deutlich unter Marktpreis (kostenlose Wartelisten!).
+        </li>
+      </ol>
+    </section>
+
+    <!-- ============ GEPLAN SUCH-AGENT ============ -->
+    <section id="agent">
+      <h2>🤖 Unser geplanter Such-Agent (Roadmap)</h2>
+      <p>
+        Es gibt bereits kommerzielle Anbieter in diesem Raum —
+        <strong>Traumwohnung.ai</strong> und <strong>Wohnly.ai</strong>
+        (KI-Agenten, die sich automatisch bewerben, kostenpflichtig) sowie den
+        <strong>Immobilien Bot</strong> (App, 26 Portale, Echtzeit-Push).
+        Unser Unterschied: <strong>Open Source, self-hosted, kostenlos,
+        DSGVO-konform</strong> — gebaut auf dem <a href="https://github.com/neopostmodern/wohnungsbot" target="_blank" rel="noopener noreferrer">Wohnungsbot</a>-Prinzip
+        (AGPL-3.0), der als Open-Source-Projekt genau bewiesen hat, dass das
+        funktioniert.
+      </p>
+
+      <h3>Was der Agent tun wird</h3>
+      <table>
+        <tr><th>Feature</th><th>Wie</th><th>Status</th></tr>
+        <tr>
+          <td><strong>Multi-Portal-Suche</strong></td>
+          <td>ImmoScout24, Immowelt, Immonet, Kleinanzeigen, WG-Gesucht
+              parallel abfragen (RSS/Export-Feeds, wo vorhanden)</td>
+          <td>🚧 In Planung — als separates Modul im Backend</td>
+        </tr>
+        <tr>
+          <td><strong>Duplikat-Erkennung</strong></td>
+          <td>Hash über Adresse + Größe + Zimmer — dieselbe Wohnung auf
+              verschiedenen Portalen wird nur einmal gemeldet, mit
+              Preis-Vergleich ("Auf Kleinanzeigen 80 € günstiger!")</td>
+          <td>🚧 In Planung</td>
+        </tr>
+        <tr>
+          <td><strong>Mietpreis-Check integriert</strong></td>
+          <td>Jedes Suchergebnis wird automatisch gegen den Mietspiegel
+              geprüft (bestehende Engine!) — Badge direkt im Ergebnis:
+              "fair" / "überhöht (§556d-Verdacht!)"</td>
+          <td>✅ Engine existiert (diese App), Integration geplant</td>
+        </tr>
+        <tr>
+          <td><strong>Benachrichtigung</strong></td>
+          <td>E-Mail / Telegram / Web-Push — kein Zwangs-Account, self-hosted</td>
+          <td>🚧 In Planung</td>
+        </tr>
+        <tr>
+          <td><strong>Betrugs-Filter</strong></td>
+          <td>Anzeigen auffinden, die unter Marktpreis liegen &amp; nach
+              Vorkasse fragen (klassische Mietbetrugs-Masche — siehe
+              <a href="/versorger">Betrugsmaschen</a>)</td>
+          <td>🚧 In Planung</td>
+        </tr>
+      </table>
+
+      <h3>Wie du mithelfen kannst</h3>
+      <ul class="tips">
+        <li>⭐ Repo auf GitHub forken/starren — jedes Issue zählt</li>
+        <li>🧪 Test-Mieter: gesucht, sobald die erste Alpha steht</li>
+        <li>💡 Portal-Suche erleben? Erzähl uns, was <em>dir</em> fehlt — Issues erwünscht</li>
+      </ul>
+      <p class="hint">
+        Rechtlicher Hinweis: Portale verbieten Scraping teils in ihren AGB.
+        Wir setzen auf offizielle Feeds/Exporte, wo vorhanden (ImmoScout
+        bietet RSS), und/oder den Klassiker: Benachrichtigungs-Mails
+        auswerten, die der Nutzer <em>selbst</em> abonniert hat. Kein
+        ToS-Verstoß, keine Grauzone.
+      </p>
+    </section>
+
+    <!-- ============ FINANZIELLE FALLSTRICKE BEI DER SUCHE ============ -->
+    <section id="fallen">
+      <h2>🚨 Fallstricke bei der Wohnungssuche</h2>
+      <table>
+        <tr><th>Falle</th><th>Erkennung</th><th>Schutz</th></tr>
+        <tr>
+          <td><strong>Mietbetrug (Vorkasse)</strong></td>
+          <td>Anzeige weit unter Marktpreis, "Eigentümer im Ausland",
+              Zahlung per Western Union / Crypto vor Besichtigung gefordert</td>
+          <td><strong>Niemals zahlen vor Besichtigung + Unterschlagung.</strong>
+              Fotos per Reverse-Image-Suche (Google Lens) prüfen — Betrüger
+              kopieren echte Portal-Fotos.</td>
+        </tr>
+        <tr>
+          <td><strong>Makler-Provision (Courtage)</strong></td>
+          <td>Bei "Vermietung durch Bestandsvermieter" darf der Makler max.
+              2 Kaltmieten + MwSt verlangen — aber nur wenn der Vermieter
+              den Makler beauftragt hat, nicht du!</td>
+          <td>Wer "den Makler beauftragt" hat, muss im Exposé stehen.
+              Direkt beim Vermieter nachfragen.</td>
+        </tr>
+        <tr>
+          <td><strong>Mietpreisbremse prüfen!</strong></td>
+          <td>Angebot deutlich über Mietspiegel — egal wie schön die Wohnung</td>
+          <td>Direkt nach dem Upload des Mietvertrags mit dem
+              <a href="/">Mietpreis-Check</a> prüfen. Überhöhte Startmiete
+              kann rückwirkend sanktioniert werden.</td>
+        </tr>
+        <tr>
+          <td><strong>Wohnflächen-Schummeln</strong></td>
+          <td>Wohnfläche wird mit Balkon/Schrägen "aufgerechnet"</td>
+          <td>WoFlV beachten: Balkon zählt max. 50 %, Schrägen ab 1 m Höhe
+              zählen — Wohnfläche nachmessen, bei >10 % Abweichung
+              Minderung + Rückforderung (3 Jahre)</td>
+        </tr>
+      </table>
+    </section>
+
+    <Donate />
+  </main>
+
+  <footer>
+    <a href="/">← Mietpreis-Check</a> ·
+    <a href="/werkzeuge">Werkzeuge</a> ·
+    <a href="/handbuch">Handbuch</a>
+  </footer>
+</Layout>
+
+<style>
+  h1 { text-align: center; padding: 2rem 1rem 0; color: var(--color-accent); margin: 0; }
+  .lede { text-align: center; color: var(--color-muted); max-width: 700px; margin: 0 auto 2rem; padding: 0 1rem; }
+  .suche { max-width: 820px; margin: 0 auto 3rem; padding: 0 1rem; }
+  section { margin-bottom: 2.5rem; }
+  h2 { border-bottom: 2px solid #e0e0e0; padding-bottom: 0.4rem; }
+  h3 { margin-top: 1.5rem; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.92rem; }
+  th, td { border: 1px solid #ddd; padding: 0.55rem; text-align: left; vertical-align: top; }
+  th { background: #f2f2f2; }
+  .hint { color: #666; font-size: 0.88rem; }
+  .tips li { margin-bottom: 0.5rem; line-height: 1.45; }
+  .steps li { margin-bottom: 0.9rem; line-height: 1.5; }
+  footer { text-align: center; padding: 2rem; color: #888; font-size: 0.85rem; }
+</style>

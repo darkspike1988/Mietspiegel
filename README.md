@@ -182,6 +182,7 @@ bleiben kostenlos. Wenn dir das Projekt hilft:
 | `/handbuch` | **Handbuch Mietwucher**: Erkennen, Maschen großer Konzerne, Klage-Leitfaden, Videos, Open-Source-Tools |
 | `/gesetze` | **Gesetze & Politik**: schematisch Bund → Land → Kommune, mit Links zu Original-Texten |
 | `/versorger` | **Strom, Gas & Internet**: Preisgarantie-Fallstricke, Betrugsmaschen, Glasfaser/Kabel/DSL/LTE-Statistik, Wechsel-Checkliste |
+| `/suche` | **Wohnungssuche-Strategie** + Roadmap: Open-Source-Multi-Portal-Such-Agent (ImmoScout/Immowelt/Kleinanzeigen/WG-Gesucht), Duplikat-Erkennung, integrierter Mietpreis-Check, Mietbetrugs-Warnungen |
 | `/wohnalltag` | **Handwerker, Umzugsfirmen & Hausordnungen**: Reparaturpflichten, Umzugs-Abzockmaschen, unwirksame Hausordnungs-Klauseln, GEZ, Schimmel-Minderung, Haustiere, Untervermietung, Übergabeprotokoll |
 
 | API | Zweck |
