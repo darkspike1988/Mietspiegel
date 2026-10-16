@@ -244,3 +244,29 @@ __all__.append("Kautionsanbieter")
 __all__.append("KautionsVergleichRequest")
 __all__.append("KautionsAngebot")
 __all__.append("KautionsVergleichResponse")
+
+
+# ----------------------------------------------------------------------
+# Versorger-Sparrechner (/api/tools/sparrechner)
+# ----------------------------------------------------------------------
+
+class SparrechnerRequest(BaseModel):
+    """Vergleich Grundversorger vs. günstigster Tarif (ct/kWh aus Portalen)."""
+    jahresverbrauch_kwh: float = Field(..., gt=0, le=100000)
+    grundversorger_ct_kwh: float = Field(..., gt=0, le=200)
+    guenstigster_tarif_ct_kwh: float = Field(..., gt=0, le=200)
+    grundgebuehr_grundversorger_eur: float = Field(0, ge=0)
+    grundgebuehr_tarif_eur: float = Field(0, ge=0)
+
+
+class SparrechnerResponse(BaseModel):
+    ok: bool = True
+    jahreskosten_grundversorger_eur: float
+    jahreskosten_tarif_eur: float
+    ersparnis_eur: float
+    ersparnis_prozent: float
+    empfehlung: str
+
+
+__all__.append("SparrechnerRequest")
+__all__.append("SparrechnerResponse")

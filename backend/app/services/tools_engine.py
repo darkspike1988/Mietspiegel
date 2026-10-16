@@ -28,6 +28,8 @@ from app.schemas.tools import (
     NebenkostenCheckRequest,
     NebenkostenCheckResponse,
     NKFinding,
+    SparrechnerRequest,
+    SparrechnerResponse,
 )
 
 STATEMENT_DEADLINE_DAYS = 365  # §556 Abs. 3 BGB: 12 Monate nach Periodenende
@@ -440,4 +442,35 @@ def compare_kaution(req: KautionsVergleichRequest) -> KautionsVergleichResponse:
             "Eine Bürgschaft bindet kein Kapital, kostet aber jährlich — "
             "bei verfügbarer Liquidität ist das klassische Kautionskonto meist günstiger."
         ),
+    )
+
+
+# ----------------------------------------------------------------------
+# Versorger-Sparrechner (Grundversorgung vs. günstiger Markt-Tarif)
+# ----------------------------------------------------------------------
+
+def compute_sparpotential(req: SparrechnerRequest) -> SparrechnerResponse:
+    """Sparpotenzial beim Wechsel von der Grundversorgung in einen
+    günstigen Markttarif — mit den vom User abgelesenen Portal-Preisen."""
+    grund_eur = round(req.jahresverbrauch_kwh * req.grundversorger_ct_kwh / 100, 2)
+    markt_eur = round(req.jahresverbrauch_kwh * req.guenstigster_tarif_ct_kwh / 100, 2)
+    grund_eur = round(grund_eur + req.grundgebuehr_grundversorger_eur, 2)
+    markt_eur = round(markt_eur + req.grundgebuehr_tarif_eur, 2)
+    ersparnis = round(grund_eur - markt_eur, 2)
+    prozent = round(ersparnis / grund_eur * 100, 1) if grund_eur > 0 else 0.0
+
+    empfehlung = (
+        f"Wechsel spart rund {max(ersparnis, 0):.0f} €/Jahr ({prozent:.0f}%). "
+        "Achte auf echte Preisgarantie (inkl. Steuern/Netzentgelte), "
+        "keine Vorkasse, Bonus-Bedingungen und den Preis im 2. Jahr."
+        if ersparnis > 50
+        else "Geringer Unterschied — bei < 50 € Ersparnis lieber auf "
+        "bessere Konditionen achten (Preisgarantie-Dauer, Ökostrom)."
+    )
+    return SparrechnerResponse(
+        jahreskosten_grundversorger_eur=grund_eur,
+        jahreskosten_tarif_eur=markt_eur,
+        ersparnis_eur=max(ersparnis, 0.0),
+        ersparnis_prozent=prozent,
+        empfehlung=empfehlung,
     )

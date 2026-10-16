@@ -247,6 +247,69 @@ import Donate from "../components/Donate.astro";
       </ul>
     </section>
 
+    <!-- ============ TARIF-FINDER: Der echte Mehrwert ============ -->
+    <section id="tarif-finder">
+      <h2>🎯 Finde wirklich den günstigsten Anbieter</h2>
+      <p class="hint">
+        Ein Portal allein reicht nicht — Rankings sind provisions-geprägt.
+        PLZ eingeben → alle großen Vergleiche auf einen Klick → Preise ablesen
+        → Sparpotenzial berechnen. Fertig.
+      </p>
+      <div class="finder">
+        <div class="plz-row">
+          <label> Deine PLZ
+            <input type="text" id="vf-plz" inputmode="numeric" maxlength="5" placeholder="10117" />
+          </label>
+          <label> Sparte
+            <select id="vf-product">
+              <option value="strom" selected>⚡ Strom</option>
+              <option value="gas">🔥 Gas</option>
+              <option value="dsl">🌐 DSL / Internet</option>
+              <option value="mobilfunk">📱 Mobilfunk</option>
+            </select>
+          </label>
+          <button id="vf-go" type="button">Vergleiche öffnen</button>
+        </div>
+        <div id="vf-links" class="portal-links" hidden>
+          <p><strong>Vergleiche jetzt auf allen Portalen</strong> (mindestens 2 nutzen!):</p>
+          <div id="vf-link-list"></div>
+          <p class="hint" id="vf-tip"></p>
+        </div>
+        <div class="sparrechner">
+          <h3>🧮 Sparpotenzial berechnen (Preise aus dem Vergleich ablesen)</h3>
+          <div class="grid">
+            <label> Jahresverbrauch (kWh)
+              <input type="number" id="sr-kwh" value="4000" min="100" />
+            </label>
+            <label> Grundversorger (ct/kWh)
+              <input type="number" id="sr-grund" value="40" step="0.01" />
+            </label>
+            <label> Günstigster Tarif (ct/kWh)
+              <input type="number" id="sr-tarif" value="28" step="0.01" />
+            </label>
+            <label> Grundgebühr Versorger (€/Jahr)
+              <input type="number" id="sr-gg1" value="0" step="0.01" />
+            </label>
+            <label> Grundgebühr Tarif (€/Jahr)
+              <input type="number" id="sr-gg2" value="0" step="0.01" />
+            </label>
+          </div>
+          <button id="sr-go" type="button">Ersparnis berechnen</button>
+          <div id="sr-result" class="result-box" hidden><div id="sr-output"></div></div>
+        </div>
+        <div class="strompreise">
+          <h3>📉 Aktueller Börsenstrompreis (SMARD / BNetzA)</h3>
+          <p class="hint">Für Dynamic-Tariff-Mieter: Wann ist Strom aktuell günstig?</p>
+          <button id="sp-go" type="button">Strompreise laden</button>
+          <div id="sp-result" hidden>
+            <div id="sp-cheap"></div>
+            <div id="sp-expensive"></div>
+            <p class="hint">Quelle: Bundesnetzagentur SMARD · CC BY 4.0 · Börsenpreis, nicht Haushaltspreis</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <Donate />
   </main>
 
@@ -272,4 +335,102 @@ import Donate from "../components/Donate.astro";
   .tips li { margin-bottom: 0.5rem; line-height: 1.45; }
   .steps li { margin-bottom: 0.8rem; line-height: 1.5; }
   footer { text-align: center; padding: 2rem; color: #888; font-size: 0.85rem; }
+  .finder { background: #f4f8ff; border-radius: 12px; padding: 1.5rem; margin-top: 1rem; }
+  .plz-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; align-items: end; }
+  .plz-row input, .plz-row select { padding: 0.55rem; border: 1px solid #bbb; border-radius: 6px; font-size: 1rem; }
+  .finder button { padding: 0.6rem 1.2rem; background: #0066cc; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; margin-top: 0.5rem; }
+  .finder button:hover { background: #0055aa; }
+  .portal-links { margin-top: 1.2rem; padding: 1rem; background: #eef4ee; border-radius: 8px; }
+  .portal-links a { display: inline-block; margin: 0.4rem 0.6rem 0.4rem 0; padding: 0.5rem 1rem; background: #0066cc; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; }
+  .portal-links a:hover { background: #0055aa; }
+  .sparrechner, .strompreise { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px dashed #bbb; }
+  .result-box { margin-top: 1rem; padding: 1rem; background: #e8f5e8; border-radius: 8px; font-size: 1.05rem; }
 </style>
+
+<script>
+  const VBACKEND =
+    (import.meta.env.PUBLIC_BACKEND_URL as string | undefined) ??
+    "http://localhost:8765";
+  const vErr = (msg: string): void => {
+    const e = document.getElementById("error");
+    if (e) { e.textContent = "⚠️ " + msg; e.hidden = false; }
+  };
+
+  // ---- Tarif-Finder: alle Portale auf einen Klick ----
+  document.getElementById("vf-go")?.addEventListener("click", async () => {
+    const plz = (document.getElementById("vf-plz") as HTMLInputElement | null)?.value?.trim() ?? "";
+    const product = (document.getElementById("vf-product") as HTMLSelectElement | null)?.value ?? "strom";
+    if (!/^\d{5}$/.test(plz)) { vErr("Bitte eine gültige 5-stellige PLZ eingeben."); return; }
+    try {
+      const r = await fetch(`${VBACKEND}/api/versorger/vergleiche?postal_code=${plz}&product=${product}`);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const d = await r.json();
+      const list = document.getElementById("vf-link-list");
+      if (list) {
+        list.innerHTML = (d.vergleiche as Array<{ portal: string; url: string }>)
+          .map((v) => `<a href="${v.url}" target="_blank" rel="noopener noreferrer">${v.portal} ↗</a>`)
+          .join("");
+      }
+      const tip = document.getElementById("vf-tip");
+      if (tip) tip.textContent = d.tip as string;
+      const box = document.getElementById("vf-links");
+      if (box) box.hidden = false;
+    } catch (e) { vErr(e instanceof Error ? e.message : String(e)); }
+  });
+
+  // ---- Sparrechner ----
+  document.getElementById("sr-go")?.addEventListener("click", async () => {
+    const num = (id: string): number =>
+      parseFloat((document.getElementById(id) as HTMLInputElement | null)?.value ?? "0") || 0;
+    const body = {
+      jahresverbrauch_kwh: num("sr-kwh"),
+      grundversorger_ct_kwh: num("sr-grund"),
+      guenstigster_tarif_ct_kwh: num("sr-tarif"),
+      grundgebuehr_grundversorger_eur: num("sr-gg1"),
+      grundgebuehr_tarif_eur: num("sr-gg2"),
+    };
+    if (body.jahresverbrauch_kwh <= 0 || body.grundversorger_ct_kwh <= 0) {
+      vErr("Bitte Verbrauch und Grundversorger-Preis angeben.");
+      return;
+    }
+    try {
+      const r = await fetch(`${VBACKEND}/api/tools/sparrechner`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const d = await r.json();
+      const out = document.getElementById("sr-output");
+      if (out) {
+        out.innerHTML = `
+          <p>Grundversorger: <strong>${(d.jahreskosten_grundversorger_eur as number).toFixed(2)} €/Jahr</strong></p>
+          <p>Günstigster Tarif: <strong>${(d.jahreskosten_tarif_eur as number).toFixed(2)} €/Jahr</strong></p>
+          <p>💰 <strong>Ersparnis: ${(d.ersparnis_eur as number).toFixed(2)} €/Jahr (${(d.ersparnis_prozent as number).toFixed(1)} %)</strong></p>
+          <p class="hint">${d.empfehlung as string}</p>`;
+      }
+      const box = document.getElementById("sr-result");
+      if (box) box.hidden = false;
+    } catch (e) { vErr(e instanceof Error ? e.message : String(e)); }
+  });
+
+  // ---- SMARD Live-Strompreise ----
+  document.getElementById("sp-go")?.addEventListener("click", async () => {
+    try {
+      const r = await fetch(`${VBACKEND}/api/versorger/strompreise`);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const d = await r.json();
+      type HourEntry = { timestamp: string; price_ct_per_kwh: number };
+      const fmt = (h: HourEntry[]): string =>
+        h.slice(0, 3)
+          .map((x) => `${new Date(x.timestamp).getHours()}:00 Uhr — ${x.price_ct_per_kwh} ct/kWh`)
+          .join("<br />");
+      const cheap = document.getElementById("sp-cheap");
+      if (cheap) cheap.innerHTML = `<strong>✅ Günstigste Stunden:</strong><br />${fmt(d.cheapest_hours)}`;
+      const exp = document.getElementById("sp-expensive");
+      if (exp) exp.innerHTML = `<strong>🔴 Teuerste Stunden:</strong><br />${fmt(d.most_expensive_hours)}`;
+      const box = document.getElementById("sp-result");
+      if (box) box.hidden = false;
+    } catch (e) { vErr(e instanceof Error ? e.message : String(e)); }
+  });
+</script>

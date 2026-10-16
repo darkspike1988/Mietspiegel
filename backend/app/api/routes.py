@@ -38,6 +38,8 @@ from app.schemas.tools import (
     MieterhoehungCheckResponse,
     NebenkostenCheckRequest,
     NebenkostenCheckResponse,
+    SparrechnerRequest,
+    SparrechnerResponse,
 )
 from app.services import (
     pdf_parser,
@@ -218,6 +220,11 @@ async def tool_kaution(req: KautionCheckRequest) -> KautionCheckResponse:
     return tools_engine.check_kaution(req)
 
 
+@api_router.post("/tools/sparrechner", response_model=SparrechnerResponse)
+async def tool_sparrechner(req: SparrechnerRequest) -> SparrechnerResponse:
+    return tools_engine.compute_sparpotential(req)
+
+
 @api_router.post("/tools/mieterhoehung", response_model=MieterhoehungCheckResponse)
 async def tool_mieterhoehung(
     req: MieterhoehungCheckRequest,
@@ -282,6 +289,61 @@ async def versorger_tarifrechner(
     from app.services import verivox_provider
 
     return verivox_provider.build_tariff_calculator_url(product, postal_code)
+
+
+@api_router.get("/versorger/vergleiche")
+async def versorger_vergleiche(postal_code: str, product: str = "strom") -> dict:
+    """Links zu ALLEN großen Vergleichsportalen je PLZ — der User
+    vergleicht quer und findet wirklich den günstigsten Anbieter.
+
+    Ein Portal allein zeigt oft nicht den besten Tarif (Ranking-
+    Faktoren sind Provisionen). Erst der Quervergleich sichert ab.
+    """
+    from app.services import verivox_provider
+
+    pid = verivox_provider.get_partner_id()
+    plz = postal_code.strip()
+    if len(plz) != 5 or not plz.isdigit():
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="postal_code muss 5-stellig sein")
+
+    base = {
+        "strom": [
+            ("Verivox", f"https://www.verivox.de/strom/stromtarife/?plz={plz}"),
+            ("Check24", f"https://www.check24.de/strom-anbieter/vergleich/?plz={plz}"),
+            ("Idealo", f"https://www.idealo.de/strom/vergleich?zip={plz}"),
+        ],
+        "gas": [
+            ("Verivox", f"https://www.verivox.de/gas/gastarife/?plz={plz}"),
+            ("Check24", f"https://www.check24.de/gas-anbieter/vergleich/?plz={plz}"),
+            ("Idealo", f"https://www.idealo.de/gas/vergleich?zip={plz}"),
+        ],
+        "dsl": [
+            ("Verivox", f"https://www.verivox.de/dsl/?plz={plz}"),
+            ("Check24", f"https://www.check24.de/dsl/?zipcode={plz}"),
+        ],
+        "mobilfunk": [
+            ("Verivox", "https://www.verivox.de/mobilfunk/"),
+            ("Check24", "https://www.check24.de/handy-tarif/"),
+        ],
+    }
+    portals = base.get(product, base["strom"])
+    result = [
+        {"portal": name, "url": url + (f"&partner={pid}" if pid and "verivox" in url.lower() else "")}
+        for name, url in portals
+    ]
+    return {
+        "ok": True,
+        "product": product,
+        "postal_code": plz,
+        "vergleiche": result,
+        "tip": (
+            "Vergleiche auf mindestens 2 Portalen: Rankings unterscheiden "
+            "sich (Provisions-Bias). Prüfe beim günstigsten Tarif: "
+            "echte Preisgarantie (inkl. Steuern/Netzentgelte), Bonus-"
+            "Bedingungen, Vorkasse-Warnung, Neukunden-Bonus vs. Folgejahr."
+        ),
+    }
 
 
 @api_router.get("/versorger/strompreise")
