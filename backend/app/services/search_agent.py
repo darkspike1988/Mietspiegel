@@ -173,17 +173,27 @@ def _parse_html(html_text: str, source: str) -> list[Listing]:
 # ----------------------------------------------------------------------
 
 async def fetch_profile(profile: SearchProfile) -> list[Listing]:
-    """Such-URL abfragen und Treffer parsen (RSS oder HTML)."""
+    """Such-URL abfragen und Treffer parsen — Provider-Dispatch.
+
+    ImmoScout-URLs gehen immer über die Mobile API (unabhängig vom
+    konfigurierten provider), da die Website Anti-Bot-geschützt ist
+    und die Mobile API die rechtssichere, ungeschützte Route ist.
+    """
+    url = str(profile.url)
+    if "immobilienscout24" in url:
+        from app.services import immoscout_provider
+        return await immoscout_provider.fetch_listings(url)
+
     headers = {"User-Agent": USER_AGENT}
     async with httpx.AsyncClient(
         headers=headers,
         timeout=httpx.Timeout(20.0),
         follow_redirects=True,
     ) as client:
-        resp = await client.get(str(profile.url))
+        resp = await client.get(url)
         resp.raise_for_status()
     text = resp.text
-    source = _source_from_url(str(profile.url))
+    source = _source_from_url(url)
     if profile.provider == Provider.RSS:
         return _parse_rss(text, source)
     return _parse_html(text, source)
