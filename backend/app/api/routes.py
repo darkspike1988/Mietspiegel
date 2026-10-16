@@ -25,7 +25,15 @@ from app.schemas.contracts import (
     WiderspruchRequest,
     WiderspruchResponse,
 )
-from app.services import pdf_parser, rent_engine, widerspruch
+from app.schemas.tools import (
+    KautionCheckRequest,
+    KautionCheckResponse,
+    MieterhoehungCheckRequest,
+    MieterhoehungCheckResponse,
+    NebenkostenCheckRequest,
+    NebenkostenCheckResponse,
+)
+from app.services import pdf_parser, rent_engine, tools_engine, widerspruch
 
 api_router = APIRouter()
 
@@ -183,3 +191,23 @@ async def widerspruch_letter(
 # Registered on the FastAPI app instance in main.py (APIRouter doesn't
 # support exception_handler).
 # ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# Free tenant tools (deterministic, no LLM, no cost)
+# Schweizer Taschenmesser: Nebenkosten / Kaution / Mieterhöhung
+# ----------------------------------------------------------------------
+
+@api_router.post("/tools/nebenkosten", response_model=NebenkostenCheckResponse)
+async def tool_nebenkosten(req: NebenkostenCheckRequest) -> NebenkostenCheckResponse:
+    return tools_engine.check_nebenkosten(req)
+
+
+@api_router.post("/tools/kaution", response_model=KautionCheckResponse)
+async def tool_kaution(req: KautionCheckRequest) -> KautionCheckResponse:
+    return tools_engine.check_kaution(req)
+
+
+@api_router.post("/tools/mieterhoehung", response_model=MieterhoehungCheckResponse)
+async def tool_mieterhoehung(
+    req: MieterhoehungCheckRequest,
+) -> MieterhoehungCheckResponse:
+    return tools_engine.check_mieterhoehung(req)

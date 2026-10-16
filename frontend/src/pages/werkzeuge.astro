@@ -1,0 +1,317 @@
+---
+/**
+ * Werkzeuge — das "Schweizer Taschenmesser" für Mieter.
+ * Drei kostenlose, deterministische Checks (kein LLM, kein API-Key nötig):
+ *   1. Nebenkostenabrechnung prüfen (§556 BGB / BetrKV)
+ *   2. Kaution prüfen (§551 BGB)
+ *   3. Mieterhöhung prüfen (§558 / §558b BGB)
+ */
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Werkzeuge — Schweizer Taschenmesser für Mieter">
+  <header>
+    <h1>🛠️ Werkzeuge für Mieter</h1>
+    <p class="lede">
+      Drei kostenlose Sofort-Checks — ohne Upload, ohne Konto, ohne Kosten.
+      Alle Prüfungen laufen deterministisch auf Basis deutscher Mietgesetze.
+    </p>
+  </header>
+
+  <main class="tools">
+    <nav class="tool-tabs">
+      <button data-tool="nk" class="tab active">🧾 Nebenkosten</button>
+      <button data-tool="kaution" class="tab">💰 Kaution</button>
+      <button data-tool="erhoehung" class="tab">📈 Mieterhöhung</button>
+    </nav>
+
+    <!-- Nebenkosten -->
+    <form id="form-nk" class="tool-form">
+      <h2>Nebenkostenabrechnung prüfen</h2>
+      <p class="hint">§556 BGB · BetrKV · 12-Monats-Frist · Umlagefähigkeit</p>
+      <div class="grid">
+        <label> Zeitraum von <input type="date" id="nk-start" required /></label>
+        <label> Zeitraum bis <input type="date" id="nk-end" required /></label>
+        <label>
+          Abrechnung erhalten am
+          <input type="date" id="nk-statement" />
+        </label>
+        <label>
+          Vorauszahlungen gesamt (€)
+          <input type="number" id="nk-advances" step="0.01" min="0" required />
+        </label>
+        <label>
+          Gesamtsumme laut Abrechnung (€)
+          <input type="number" id="nk-total" step="0.01" min="0" required />
+        </label>
+        <label>
+          Nachzahlung laut Abrechnung (€)
+          <input type="number" id="nk-claimed" step="0.01" required />
+        </label>
+      </div>
+      <fieldset>
+        <legend>Positionen (optional)</legend>
+        <div id="nk-items"></div>
+        <button type="button" id="nk-add-item" class="ghost">+ Position hinzufügen</button>
+      </fieldset>
+      <label class="check">
+        <input type="checkbox" id="nk-contract" checked />
+        Mietvertrag erlaubt Nebenkosten-Umlage
+      </label>
+      <button type="submit">Abrechnung prüfen</button>
+    </form>
+
+    <!-- Kaution -->
+    <form id="form-kaution" class="tool-form" hidden>
+      <h2>Kaution prüfen</h2>
+      <p class="hint">§551 BGB · max. 3 Monatsmieten · Ratenzahlung · Zinsanspruch</p>
+      <div class="grid">
+        <label>
+          Kaltmiete (€/Monat)
+          <input type="number" id="k-rent" step="0.01" min="0.01" required />
+        </label>
+        <label>
+          Geleistete Kaution (€)
+          <input type="number" id="k-deposit" step="0.01" min="0" required />
+        </label>
+      </div>
+      <label class="check">
+        <input type="checkbox" id="k-installments" checked />
+        Ratenzahlung vereinbart / möglich (3 Monatsraten)
+      </label>
+      <button type="submit">Kaution prüfen</button>
+    </form>
+
+    <!-- Mieterhöhung -->
+    <form id="form-erhoehung" class="tool-form" hidden>
+      <h2>Mieterhöhung prüfen</h2>
+      <p class="hint">§558 BGB · Kappungsgrenze 15% · Sperrfrist 15 Monate · §558b Schriftform</p>
+      <div class="grid">
+        <label>
+          Aktuelle Kaltmiete (€)
+          <input type="number" id="m-current" step="0.01" min="0.01" required />
+        </label>
+        <label>
+          Geforderte neue Kaltmiete (€)
+          <input type="number" id="m-proposed" step="0.01" min="0.01" required />
+        </label>
+        <label>
+          Letzte Erhöhung am
+          <input type="date" id="m-last" />
+        </label>
+      </div>
+      <button type="submit">Erhöhung prüfen</button>
+    </form>
+
+    <!-- Ergebnis -->
+    <section id="result" class="result" hidden>
+      <h2>Ergebnis</h2>
+      <dl id="result-dl"></dl>
+      <ul id="findings"></ul>
+      <p class="recommendation" id="recommendation"></p>
+    </section>
+
+    <p class="error" id="error" hidden></p>
+  </main>
+
+  <footer>
+    <a href="/">← Mietpreis-Check</a>
+    <br />
+    Keine Rechtsberatung — Angaben ohne Gewähr. Im Streitfall Mieterverein fragen.
+  </footer>
+</Layout>
+
+<style>
+  h1 { text-align: center; padding: 2rem 1rem 0; color: var(--color-accent); margin: 0; }
+  .lede { text-align: center; color: var(--color-muted); max-width: 620px; margin: 0 auto 1.5rem; padding: 0 1rem; }
+  .tools { max-width: 760px; margin: 0 auto 3rem; padding: 0 1rem; }
+  .tool-tabs { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .tab { background: #eee; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 1rem; }
+  .tab.active { background: var(--color-accent, #0066cc); color: white; }
+  .tool-form { background: #f9f9f9; border-radius: 10px; padding: 1.5rem; }
+  .tool-form h2 { margin-top: 0; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  label { display: flex; flex-direction: column; font-size: 0.9rem; gap: 0.25rem; }
+  .check { flex-direction: row; align-items: center; gap: 0.5rem; margin: 1rem 0; }
+  input, fieldset { padding: 0.5rem; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; }
+  fieldset { margin: 1rem 0; }
+  button[type="submit"] { margin-top: 1rem; padding: 0.75rem 1.5rem; background: #0066cc; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; }
+  button.ghost { background: none; border: 1px dashed #999; color: #555; padding: 0.4rem 0.8rem; border-radius: 6px; }
+  .result { margin-top: 1.5rem; padding: 1.5rem; background: #f0f7ff; border-radius: 10px; }
+  dl { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 1rem; }
+  dt { font-weight: 600; }
+  dd { margin: 0; }
+  .findings { list-style: none; padding: 0; margin-top: 1rem; }
+  .findings li { padding: 0.5rem 0.75rem; border-radius: 6px; margin-bottom: 0.4rem; font-size: 0.95rem; }
+  .findings li.error { background: #fde8e8; border-left: 4px solid #b00020; }
+  .findings li.warn { background: #fff4d6; border-left: 4px solid #cc8800; }
+  .findings li.info { background: #e8f5e8; border-left: 4px solid #2e7d32; }
+  .recommendation { font-weight: 600; margin-top: 1rem; }
+  .error { color: #b00020; padding: 0.75rem; background: #fee; border-radius: 6px; max-width: 760px; margin: 1rem auto; }
+  .hint { color: #666; font-size: 0.85rem; margin-top: -0.5rem; }
+  footer { text-align: center; padding: 2rem; color: #888; font-size: 0.85rem; }
+  .item-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem; }
+</style>
+
+<script>
+  const BACKEND =
+    (import.meta.env.PUBLIC_BACKEND_URL as string | undefined) ??
+    "http://localhost:8765";
+
+  const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
+    const el = document.getElementById(id);
+    if (!el) throw new Error(`Element #${id} missing`);
+    return el as T;
+  };
+
+  const show = (id: string, visible: boolean): void => { $(id).hidden = !visible; };
+  const setError = (msg: string | null): void => {
+    const e = $("error");
+    if (msg) { e.textContent = "⚠️ " + msg; e.hidden = false; } else { e.hidden = true; e.textContent = ""; }
+  };
+
+  // --- Tabs ---
+  const forms = { nk: "form-nk", kaution: "form-kaution", erhoehung: "form-erhoehung" } as const;
+  document.querySelectorAll<HTMLButtonElement>(".tab").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      Object.values(forms).forEach((id) => show(id, false));
+      show(forms[btn.dataset.tool as keyof typeof forms], true);
+      show("result", false);
+    });
+  });
+
+  // --- Nebenkosten: dynamische Positionen ---
+  const itemsContainer = $("nk-items");
+  $("nk-add-item").addEventListener("click", () => {
+    const row = document.createElement("div");
+    row.className = "item-row";
+    row.innerHTML = `
+      <input placeholder="Bezeichnung (z.B. Heizung)" class="it-label" />
+      <input type="number" step="0.01" min="0" placeholder="Betrag €" class="it-amount" />
+      <label class="check"><input type="checkbox" class="it-na" /> nicht umlagefähig</label>`;
+    itemsContainer.appendChild(row);
+  });
+
+  const collectItems = (): Array<{
+    label: string; amount_eur: number; not_allocation_capable: boolean;
+  }> => {
+    return Array.from(itemsContainer.querySelectorAll<HTMLElement>(".item-row"))
+      .map((row) => ({
+        label:
+          (row.querySelector<HTMLInputElement>(".it-label")?.value || "Position").trim(),
+        amount_eur:
+          parseFloat(row.querySelector<HTMLInputElement>(".it-amount")?.value || "0") || 0,
+        not_allocation_capable:
+          (row.querySelector<HTMLInputElement>(".it-na") as HTMLInputElement | null)?.checked ?? false,
+      }))
+      .filter((it) => it.amount_eur > 0);
+  };
+
+  const val = (id: string): string => ($<HTMLInputElement>(id).value || "").trim();
+  const num = (id: string): number => parseFloat($<HTMLInputElement>(id).value);
+
+  type Finding = { severity: string; message: string; legal_basis?: string | null };
+
+  const render = (fields: Array<[string, string]>, findings: Finding[], rec: string): void => {
+    const dl = $("result-dl");
+    dl.innerHTML = fields
+      .map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`)
+      .join("");
+    $("findings").innerHTML = findings
+      .map(
+        (f) =>
+          `<li class="${f.severity}">${f.message}${f.legal_basis ? ` <em>(${f.legal_basis})</em>` : ""}</li>`
+      )
+      .join("");
+    $("recommendation").textContent = rec;
+    show("result", true);
+  };
+
+  const call = async (path: string, body: object): Promise<Record<string, unknown>> => {
+    setError(null);
+    const r = await fetch(`${BACKEND}${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) {
+      const t = await r.text();
+      throw new Error(`HTTP ${r.status}: ${t.slice(0, 300)}`);
+    }
+    return r.json();
+  };
+
+  const eur = (n: number): string => n.toFixed(2) + " €";
+
+  $("form-nk").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    try {
+      const d = await call("/api/tools/nebenkosten", {
+        period_start: val("nk-start"),
+        period_end: val("nk-end"),
+        statement_date: val("nk-statement") || null,
+        items: collectItems(),
+        total_advance_payments_eur: num("nk-advances"),
+        invoiced_total_eur: num("nk-total"),
+        claimed_balance_eur: num("nk-claimed"),
+        contract_allows_allocation: ($("nk-contract") as HTMLInputElement).checked,
+      });
+      render(
+        [
+          ["Einzelpositionen", eur(d.items_total_eur as number)],
+          ["Arithmetik", (d.arithmetic_ok as boolean) ? "✅ plausibel" : "⚠️ Abweichung"],
+          ["12-Monats-Frist", (d.deadline_ok as boolean) ? "✅ eingehalten" : "❌ versäumt"],
+          ["Nicht umlagefähig", eur(d.non_allocatable_eur as number)],
+          ["Erwarteter Saldo", eur(d.expected_balance_eur as number)],
+          ["Mögliche Rückforderung", eur(d.overpayment_eur as number)],
+        ],
+        d.findings as Finding[],
+        d.recommendation as string
+      );
+    } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
+  });
+
+  $("form-kaution").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    try {
+      const d = await call("/api/tools/kaution", {
+        cold_rent_eur: num("k-rent"),
+        deposit_eur: num("k-deposit"),
+        installments_allowed: ($("k-installments") as HTMLInputElement).checked,
+      });
+      render(
+        [
+          ["Zulässiges Maximum", eur(d.legal_maximum_eur as number)],
+          ["Überhöhung", eur(d.excess_eur as number)],
+          ["Kaution / Monatsmiete", String(d.deposit_ratio) + "×"],
+          ["Pauschaler Zinsanspruch/Jahr", eur(d.interest_claim_eur as number)],
+        ],
+        d.findings as Finding[],
+        d.recommendation as string
+      );
+    } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
+  });
+
+  $("form-erhoehung").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    try {
+      const d = await call("/api/tools/mieterhoehung", {
+        current_cold_rent_eur: num("m-current"),
+        proposed_cold_rent_eur: num("m-proposed"),
+        last_increase_date: val("m-last") || null,
+      });
+      render(
+        [
+          ["Erhöhung", `${(d.increase_percent as number).toFixed(1)} % (+${eur(d.increase_eur as number)})`],
+          ["Kappungsgrenze (15%)", (d.within_15_percent_cap as boolean) ? "✅ eingehalten" : "❌ verletzt"],
+          ["Sperrfrist (15 Monate)", (d.sperrfrist_ok as boolean) ? "✅ eingehalten" : "❌ verletzt"],
+          ["Schriftform-Begründung", (d.formal_notice_hint as boolean) ? "Vermieter muss schriftlich begründen" : ""],
+        ],
+        d.findings as Finding[],
+        d.recommendation as string
+      );
+    } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
+  });
+</script>
