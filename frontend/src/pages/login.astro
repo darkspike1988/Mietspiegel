@@ -1,0 +1,309 @@
+---
+/**
+ * Login — Registrierung, Login (E-Mail/Passwort + Google/Apple), 2FA-Setup,
+ * Benachrichtigungskanäle. Der API-Token wird im localStorage gespeichert.
+ */
+import Layout from "../layouts/Layout.astro";
+import Nav from "../components/Nav.astro";
+import Donate from "../components/Donate.astro";
+---
+<Layout title="Login — Mietspiegel-AI">
+  <Nav />
+  <header>
+    <h1>👤 Dein Account</h1>
+    <p class="lede">
+      Kostenlos. Such-Agent-Profile, Benachrichtigungen und dein Wohnprofil —
+      alles an einem Ort.
+    </p>
+  </header>
+
+  <main class="auth">
+    <!-- ============ NICHT ANGEMELDET ============ -->
+    <div id="auth-logged-out">
+      <div class="auth-card">
+        <h2>Anmelden</h2>
+        <form id="login-form">
+          <label> E-Mail
+            <input type="email" id="li-email" required placeholder="du@example.de" />
+          </label>
+          <label> Passwort
+            <input type="password" id="li-pass" required />
+          </label>
+          <label id="li-2fa-row" hidden> 2FA-Code (aus Authenticator-App)
+            <input type="text" id="li-totp" inputmode="numeric" maxlength="6" placeholder="123456" />
+          </label>
+          <button type="submit" id="li-btn">Einloggen</button>
+          <p class="error" id="li-error" hidden></p>
+        </form>
+      </div>
+
+      <div class="auth-card">
+        <h2>Registrieren</h2>
+        <form id="register-form">
+          <label> E-Mail
+            <input type="email" id="rg-email" required placeholder="du@example.de" />
+          </label>
+          <label> Passwort (min. 8 Zeichen)
+            <input type="password" id="rg-pass" minlength="8" required />
+          </label>
+          <button type="submit">Account erstellen</button>
+          <p class="error" id="rg-error" hidden></p>
+          <p class="hint" id="rg-success" hidden></p>
+        </form>
+      </div>
+
+      <div class="auth-card">
+        <h2>Oder mit einem Klick</h2>
+        <button id="btn-google" class="oauth-btn google">🔵 Mit Google anmelden</button>
+        <button id="btn-apple" class="oauth-btn apple">🍎 Mit Apple anmelden</button>
+        <p class="hint">
+          Google/Apple-Login wird aktiv, sobald die App-IDs in der Backend-Env
+          konfiguriert sind — die Buttons führen dann direkt zum Provider.
+        </p>
+      </div>
+    </div>
+
+    <!-- ============ ANGEMELDET ============ -->
+    <div id="auth-logged-in" hidden>
+      <div class="auth-card">
+        <h2>✅ Angemeldet</h2>
+        <p>Willkommen! Dein Token ist auf diesem Gerät gespeichert.</p>
+        <p class="hint" id="user-email"></p>
+        <button id="btn-logout" class="danger">Abmelden</button>
+      </div>
+
+      <div class="auth-card">
+        <h2>🔔 Benachrichtigungen</h2>
+        <p class="hint">Wähle, wie dich der Such-Agent erreicht — alles kostenlos.</p>
+        <label> Telegram Chat-ID
+          <input type="text" id="nt-telegram" placeholder="z.B. 123456789 (via @userinfobot)" />
+        </label>
+        <p class="hint">Telegram: Schreibe deinem Bot (via @BotFather erstellten) — die Chat-ID bekommst du von @userinfobot.</p>
+        <label> ntfy-Push-Topic
+          <input type="text" id="nt-ntfy" placeholder="z.B. meine-wohnung-2026 (privat wählen!)" />
+        </label>
+        <p class="hint">ntfy: Gratis-Push-App (iOS/Android) — Topic in der App abonnieren, hier eintragen.</p>
+        <label class="check">
+          <input type="checkbox" id="nt-email" checked /> E-Mail-Benachrichtigung
+        </label>
+        <button id="btn-notifications">Kanäle speichern</button>
+        <p class="hint" id="nt-saved" hidden>✅ Gespeichert — neue Treffer landen auf deinen Kanälen.</p>
+      </div>
+
+      <div class="auth-card">
+        <h2>🔐 Zweifaktor (2FA)</h2>
+        <p class="hint">Optional, aber empfohlen: Zusätzlicher Code aus einer Authenticator-App bei jedem Login.</p>
+        <button id="btn-2fa-setup">2FA einrichten</button>
+        <div id="twofa-setup" hidden>
+          <p class="hint">1. QR-Code scannen (Google Authenticator, Apple, Authy…):</p>
+          <p class="secret" id="tfa-secret"></p>
+          <p class="hint">2. Den 6-stelligen Code bestätigen:</p>
+          <input type="text" id="tfa-code" inputmode="numeric" maxlength="6" placeholder="123456" />
+          <button id="btn-2fa-enable">2FA aktivieren</button>
+          <p class="hint" id="tfa-status" hidden></p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Donate />
+</Layout>
+
+<style>
+  h1 { text-align: center; padding: 2rem 1rem 0; color: var(--color-accent); margin: 0; }
+  .lede { text-align: center; color: var(--color-muted); max-width: 600px; margin: 0 auto 2rem; padding: 0 1rem; }
+  .auth { max-width: 560px; margin: 0 auto 3rem; padding: 0 1rem; display: flex; flex-direction: column; gap: 1.2rem; }
+  .auth-card { background: #f8f9fb; border: 1px solid #e0e4ea; border-radius: 12px; padding: 1.4rem; }
+  .auth-card h2 { margin: 0 0 1rem; font-size: 1.2rem; }
+  label { display: block; font-size: 0.9rem; margin: 0.6rem 0; }
+  input { width: 100%; padding: 0.6rem; border: 1px solid #bbb; border-radius: 6px; font-size: 1rem; box-sizing: border-box; }
+  button { padding: 0.65rem 1.2rem; background: #0066cc; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; margin-top: 0.6rem; }
+  button:hover { background: #0055aa; }
+  button.danger { background: #b00020; }
+  button.danger:hover { background: #8a0019; }
+  .oauth-btn { display: block; width: 100%; margin-top: 0.5rem; }
+  .oauth-btn.google { background: #4285f4; }
+  .oauth-btn.apple { background: #000; }
+  .hint { color: #666; font-size: 0.85rem; margin: 0.4rem 0 0; }
+  .secret { font-family: monospace; background: #eef; padding: 0.5rem; border-radius: 6px; word-break: break-all; }
+  .error { color: #b00020; font-size: 0.9rem; background: #fee; padding: 0.5rem; border-radius: 6px; margin: 0.5rem 0 0; }
+  .check { flex-direction: row; align-items: center; gap: 0.5rem; display: flex; }
+  .check input { width: auto; }
+</style>
+
+<script>
+  const BACKEND =
+    (import.meta.env.PUBLIC_BACKEND_URL as string | undefined) ??
+    "http://localhost:8765";
+
+  const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
+    const el = document.getElementById(id);
+    if (!el) throw new Error(`Element #${id} missing`);
+    return el as T;
+  };
+  const TOKEN_KEY = "mietspiegel_token";
+
+  const getToken = (): string | null => localStorage.getItem(TOKEN_KEY);
+  const setToken = (t: string): void => localStorage.setItem(TOKEN_KEY, t);
+  const clearToken = (): void => localStorage.removeItem(TOKEN_KEY);
+
+  const setErr = (id: string, msg: string | null): void => {
+    const e = $(id);
+    if (msg) { e.textContent = "⚠️ " + msg; e.hidden = false; } else { e.hidden = true; e.textContent = ""; }
+  };
+
+  // ---- UI-State: eingeloggt oder nicht ----
+  function refreshAuthState(): void {
+    const token = getToken();
+    $("auth-logged-out").hidden = !!token;
+    $("auth-logged-in").hidden = !token;
+    if (token) {
+      void load2faState();
+    }
+  }
+
+  async function load2faState(): Promise<void> {
+    // Einfacher Check: 2FA-Setup-Endpoint mit Token
+    const token = getToken();
+    if (!token) return;
+    try {
+      const r = await fetch(`${BACKEND}/api/auth/2fa/setup?api_token=${token}`, { method: "POST" });
+      if (r.status === 401) { clearToken(); refreshAuthState(); }
+    } catch { /* Backend offline */ }
+  }
+
+  // ---- Login ----
+  $("login-form").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    setErr("li-error", null);
+    const email = ($("li-email") as HTMLInputElement).value.trim();
+    const pass = ($("li-pass") as HTMLInputElement).value;
+    const totp = ($("li-totp") as HTMLInputElement).value.trim() || undefined;
+    try {
+      const r = await fetch(`${BACKEND}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: pass, totp_code: totp }),
+      });
+      const d = await r.json();
+      if (r.status === 401 && String(d.detail ?? "").includes("2FA")) {
+        $("li-2fa-row").hidden = false;
+        setErr("li-error", "Bitte 2FA-Code aus deiner Authenticator-App eingeben.");
+        return;
+      }
+      if (!r.ok) throw new Error(d.detail || `HTTP ${r.status}`);
+      setToken(d.api_token as string);
+      ($("user-email") as HTMLElement).textContent = email;
+      refreshAuthState();
+    } catch (e) {
+      setErr("li-error", e instanceof Error ? e.message : String(e));
+    }
+  });
+
+  // ---- Registrieren ----
+  $("register-form").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    setErr("rg-error", null);
+    $("rg-success").hidden = true;
+    const email = ($("rg-email") as HTMLInputElement).value.trim();
+    const pass = ($("rg-pass") as HTMLInputElement).value;
+    try {
+      const r = await fetch(`${BACKEND}/api/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: pass }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.detail || `HTTP ${r.status}`);
+      setToken(d.api_token as string);
+      const s = $("rg-success");
+      s.textContent = `✅ Account erstellt! Du bist angemeldet — Token sicher aufbewahrt.`;
+      s.hidden = false;
+      ($("user-email") as HTMLElement).textContent = email;
+      refreshAuthState();
+    } catch (e) {
+      setErr("rg-error", e instanceof Error ? e.message : String(e));
+    }
+  });
+
+  // ---- OAuth ----
+  async function startOauth(provider: "google" | "apple"): Promise<void> {
+    try {
+      const r = await fetch(`${BACKEND}/api/auth/oauth/${provider}/start`);
+      const d = await r.json();
+      if (r.status === 503) {
+        alert(`${provider}-Login ist noch nicht konfiguriert — siehe Hint auf der Seite.`);
+        return;
+      }
+      window.location.href = d.authorize_url as string;
+    } catch (e) {
+      alert(`⚠️ ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+  $("btn-google")?.addEventListener("click", () => void startOauth("google"));
+  $("btn-apple")?.addEventListener("click", () => void startOauth("apple"));
+
+  // ---- Logout ----
+  $("btn-logout")?.addEventListener("click", () => {
+    clearToken();
+    refreshAuthState();
+  });
+
+  // ---- Benachrichtigungen ----
+  $("btn-notifications")?.addEventListener("click", async () => {
+    const token = getToken();
+    if (!token) return;
+    const telegram = ($("nt-telegram") as HTMLInputElement).value.trim();
+    const ntfy = ($("nt-ntfy") as HTMLInputElement).value.trim();
+    const email = ($("nt-email") as HTMLInputElement).checked;
+    const params = new URLSearchParams({ api_token: token });
+    if (telegram) params.set("telegram_chat_id", telegram);
+    if (ntfy) params.set("ntfy_topic", ntfy);
+    params.set("notify_email", email ? "true" : "false");
+    try {
+      const r = await fetch(`${BACKEND}/api/auth/notifications?${params}`, { method: "POST" });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      $("nt-saved").hidden = false;
+    } catch (e) {
+      alert(`⚠️ ${e instanceof Error ? e.message : String(e)}`);
+    }
+  });
+
+  // ---- 2FA ----
+  $("btn-2fa-setup")?.addEventListener("click", async () => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      const r = await fetch(`${BACKEND}/api/auth/2fa/setup?api_token=${token}`, { method: "POST" });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.detail || `HTTP ${r.status}`);
+      $("tfa-secret").textContent = d.otpauth_url as string;
+      $("twofa-setup").hidden = false;
+    } catch (e) {
+      alert(`⚠️ ${e instanceof Error ? e.message : String(e)}`);
+    }
+  });
+
+  $("btn-2fa-enable")?.addEventListener("click", async () => {
+    const token = getToken();
+    if (!token) return;
+    const code = ($("tfa-code") as HTMLInputElement).value.trim();
+    try {
+      const r = await fetch(
+        `${BACKEND}/api/auth/2fa/enable?api_token=${token}&code=${code}`,
+        { method: "POST" }
+      );
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.detail || `HTTP ${r.status}`);
+      const st = $("tfa-status");
+      st.textContent = "✅ 2FA aktiv — ab jetzt beim Login den Code mitgeben.";
+      st.hidden = false;
+    } catch (e) {
+      const st = $("tfa-status");
+      st.textContent = `⚠️ ${e instanceof Error ? e.message : String(e)}`;
+      st.hidden = false;
+    }
+  });
+
+  refreshAuthState();
+</script>

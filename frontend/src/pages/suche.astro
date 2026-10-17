@@ -404,9 +404,10 @@ import Donate from "../components/Donate.astro";
 
   document.getElementById("ort-save-agent")?.addEventListener("click", async () => {
     const query = (document.getElementById("ort-input") as HTMLInputElement | null)?.value?.trim() ?? "";
+    const token = localStorage.getItem("mietspiegel_token");
     for (const entry of savedAgentUrls) {
       try {
-        await fetch(`${SB}/api/search/profiles`, {
+        await fetch(`${SB}/api/search/profiles?api_token=${token ?? ""}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name: `${query} (${entry.portal})`, url: entry.url }),
