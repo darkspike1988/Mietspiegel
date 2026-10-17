@@ -276,7 +276,7 @@ async def run_bot_forever() -> None:
                     chat_id = str(msg.get("chat", {}).get("id", ""))
                     text = msg.get("text", "")
                     answer = await process_message(text)
-                    if answer and chat_id:
+                    if answer:
                         await _send_message(token, chat_id, answer)
             except asyncio.CancelledError:
                 log.info("telegram_bot_stopped")
@@ -292,9 +292,8 @@ _task: asyncio.Task | None = None
 def start() -> None:
     """Bot starten (idempotent, nur wenn Token konfiguriert)."""
     global _task
-    if _task is None or _task.done():
-        if os.environ.get("TELEGRAM_BOT_TOKEN", "").strip():
-            _task = asyncio.get_event_loop().create_task(run_bot_forever())
+    if (_task is None or _task.done()) and os.environ.get("TELEGRAM_BOT_TOKEN", "").strip():
+        _task = asyncio.get_event_loop().create_task(run_bot_forever())
 
 
 def stop() -> None:

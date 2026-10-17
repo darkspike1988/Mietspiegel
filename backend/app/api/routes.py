@@ -25,8 +25,13 @@ from app.schemas.contracts import (
     WiderspruchRequest,
     WiderspruchResponse,
 )
+from app.schemas.klausel_check import (
+    KlauselCheckRequest,
+    KlauselCheckResponse,
+)
 from app.schemas.landlord_check import LandlordResponse
 from app.schemas.local_providers import LocalProvidersResponse
+from app.schemas.portfolio import ImmobilienObjekt, PortfolioResponse
 from app.schemas.search_agent import (
     Provider,
     RefreshResponse,
@@ -852,3 +857,49 @@ async def plan_wechseln(api_token: str, plan: str) -> dict:
             if plan != "free" else "Zurück auf Free — alle Basis-Tools bleiben."
         ),
     }
+
+
+# ----------------------------------------------------------------------
+# Plus: LLM-Klausel-Check · Pro: Eigentums-Portfolio
+# ----------------------------------------------------------------------
+
+@api_router.post("/klausel-check", response_model=KlauselCheckResponse)
+async def klausel_check_endpoint(
+    req: KlauselCheckRequest, request: Request
+) -> KlauselCheckResponse:
+    """(Plus) Mietvertrag → unwirksame Klauseln. Deterministischer
+    Pre-Screen (BGH-Fundus) + optionale LLM-Tiefe mit Mistral-Key."""
+    from app.services import klausel_check as kc
+
+    mistral = request.app.state.mistral
+    return await kc.klausel_check(req, mistral)
+
+
+@api_router.post("/portfolio/objekt", status_code=201)
+async def portfolio_add(
+    obj: ImmobilienObjekt, api_token: str
+) -> dict:
+    """(Pro) Eigentumswohnung oder Haus ins Portfolio aufnehmen.
+    Limit: 25 Objekte im Pro-Plan (Portfolio ist Pro-exklusiv)."""
+    from app.services import portfolio, user_service
+
+    user = user_service.user_by_token(api_token)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Ungültiger Token")
+    try:
+        pid = portfolio.add_property(user["id"], obj)
+    except ValueError as e:
+        raise HTTPException(status_code=402, detail=str(e)) from e
+    return {"ok": True, "objekt_id": pid}
+
+
+@api_router.get("/portfolio", response_model=PortfolioResponse)
+async def portfolio_get(api_token: str) -> PortfolioResponse:
+    """(Pro) Komplettes Portfolio: Objekte je mit Rendite-Statistik +
+    Markt-Badge (Mietspiegel-Engine) + Gesamt-Statistik."""
+    from app.services import portfolio, user_service
+
+    user = user_service.user_by_token(api_token)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Ungültiger Token")
+    return portfolio.get_portfolio_response(user["id"])
