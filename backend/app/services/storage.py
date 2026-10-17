@@ -208,6 +208,7 @@ def reset_db_for_tests() -> None:
         if _conn is not None:
             _conn.executescript(
                 "DELETE FROM search_profiles; DELETE FROM seen_listings; "
-                "DELETE FROM tariff_observations;"
+                "DELETE FROM tariff_observations; DELETE FROM oauth_identities; "
+                "DELETE FROM users;"
             )
             _conn.commit()

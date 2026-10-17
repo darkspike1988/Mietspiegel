@@ -436,15 +436,33 @@ class ProfileListResponse(BaseModel):
 
 
 @api_router.post("/search/profiles", status_code=201)
-async def create_search_profile(req: SearchProfile) -> dict:
-    """Suchprofil persistent anlegen (SQLite) — der Scheduler und
-    /search/refresh/{id} nutzen es."""
-    from app.services import storage
+async def create_search_profile(
+    req: SearchProfile, api_token: str | None = None
+) -> dict:
+    """Suchprofil persistent anlegen. Mit api_token gehört es dem User
+    (Benachrichtigungen laufen dann über seine Kanäle); ohne Token
+    bleibt es anonym (wie bisher)."""
+    from app.services import storage, user_service
+
+    user_id = None
+    if api_token:
+        user = user_service.user_by_token(api_token)
+        if user is None:
+            raise HTTPException(status_code=401, detail="Ungültiger Token")
+        user_id = user["id"]
 
     pid = storage.save_profile(
         name=req.name, url=str(req.url), provider=req.provider.value,
         city=req.city,
     )
+    if user_id is not None:
+        conn = storage._get_conn()
+        with storage._lock:
+            conn.execute(
+                "UPDATE search_profiles SET user_id = ? WHERE id = ?",
+                (user_id, pid),
+            )
+            conn.commit()
     return {"ok": True, "profile_id": pid, "name": req.name}
 
 
@@ -597,3 +615,147 @@ async def versorger_lokal(postal_code: str) -> LocalProvidersResponse:
     if len(postal_code) != 5 or not postal_code.isdigit():
         raise HTTPException(status_code=400, detail="postal_code muss 5-stellig sein")
     return local_providers.get_local_providers(postal_code)
+
+
+# ----------------------------------------------------------------------
+# Auth: Register/Login, Google+Apple OAuth, 2FA (TOTP)
+# ----------------------------------------------------------------------
+
+
+class RegisterRequest(BaseModel):
+    email: str
+    password: str
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+    totp_code: str | None = None
+
+
+@api_router.post("/auth/register")
+async def auth_register(req: RegisterRequest) -> dict:
+    """Kostenloser Account: E-Mail + Passwort (≥8 Zeichen)."""
+    from app.services import user_service
+
+    try:
+        result = user_service.register_user(req.email, req.password)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"ok": True, "email": result["email"], "api_token": result["api_token"],
+            "hint": "Token sicher aufbewahren — Profile & Benachrichtigungen hängen daran."}
+
+
+@api_router.post("/auth/login")
+async def auth_login(req: LoginRequest) -> dict:
+    """Login → API-Token. Mit aktiviertem 2FA ist totp_code nötig."""
+    from app.services import user_service
+
+    try:
+        token = user_service.login_user(req.email, req.password)
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    user = user_service.user_by_token(token)
+    if user and not user_service.verify_2fa(user["id"], req.totp_code or ""):
+        raise HTTPException(status_code=401, detail="2FA-Code falsch oder fehlt")
+    return {"ok": True, "api_token": token}
+
+
+@api_router.get("/auth/oauth/{provider}/start")
+async def oauth_start(provider: str) -> dict:
+    """OAuth-Login starten → Redirect-URL (Google/Apple).
+    Nicht konfigurierte Provider liefern 503 mit Setup-Hinweis."""
+    import secrets as _secrets
+
+    from app.services import oauth_service
+
+    state = _secrets.token_urlsafe(16)
+    if provider == "google":
+        url = oauth_service.google_authorize_url(state)
+    elif provider == "apple":
+        url = oauth_service.apple_authorize_url(state)
+    else:
+        raise HTTPException(status_code=400, detail="provider: google | apple")
+    if url is None:
+        raise HTTPException(
+            status_code=503,
+            detail=f"{provider}-Login nicht konfiguriert (CLIENT_ID etc. in .env setzen)",
+        )
+    return {"ok": True, "authorize_url": url, "state": state}
+
+
+@api_router.get("/auth/oauth/{provider}/callback")
+async def oauth_callback(provider: str, code: str, state: str | None = None) -> dict:
+    """OAuth-Callback: code → id_token → User anlegen/koppeln → Token."""
+    from app.services import oauth_service, user_service
+
+    if provider == "google":
+        payload = await oauth_service.google_exchange_code(code)
+    elif provider == "apple":
+        payload = await oauth_service.apple_exchange_code(code)
+    else:
+        raise HTTPException(status_code=400, detail="provider: google | apple")
+    if payload is None:
+        raise HTTPException(status_code=401, detail="OAuth-Exchange fehlgeschlagen")
+    identity = oauth_service.extract_identity(payload, provider)
+    if identity is None:
+        raise HTTPException(status_code=401, detail="Keine E-Mail im OAuth-Token")
+    result = user_service.login_or_register_oauth(identity)
+    return {"ok": True, "api_token": result["api_token"],
+            "created": result["created"]}
+
+
+# ---- 2FA ----
+
+
+@api_router.post("/auth/2fa/setup")
+async def twofa_setup(api_token: str) -> dict:
+    """2FA starten: liefert Secret + otpauth-URL (QR-Code scannen),
+    danach mit /auth/2fa/enable + erstem Code bestätigen."""
+    from app.services import twofactor, user_service
+
+    user = user_service.user_by_token(api_token)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Ungültiger Token")
+    secret = twofactor.generate_secret()
+    user_service.set_2fa_secret(user["id"], secret)
+    return {
+        "ok": True,
+        "secret": secret,
+        "otpauth_url": twofactor.otpauth_url(secret, user["email"]),
+        "hint": "QR scannen (Google Authenticator / Apple / Authy), dann /auth/2fa/enable",
+    }
+
+
+@api_router.post("/auth/2fa/enable")
+async def twofa_enable(api_token: str, code: str) -> dict:
+    """2FA aktivieren — der erste Code aus der Authenticator-App."""
+    from app.services import twofactor, user_service
+
+    user = user_service.user_by_token(api_token)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Ungültiger Token")
+    state = user_service.get_2fa_state(user["id"])
+    if not state["secret"] or not twofactor.verify_totp(state["secret"], code):
+        raise HTTPException(status_code=400, detail="Code falsch — bitte erneut")
+    user_service.enable_2fa(user["id"])
+    return {"ok": True, "hint": "2FA aktiv — ab jetzt beim Login TOTP-Code mitgeben."}
+
+
+@api_router.post("/auth/notifications")
+async def auth_notifications(
+    api_token: str,
+    telegram_chat_id: str | None = None,
+    ntfy_topic: str | None = None,
+    notify_email: bool | None = None,
+) -> dict:
+    """Benachrichtigungskanäle setzen (alle optional, mehrere möglich)."""
+    from app.services import user_service
+
+    user = user_service.user_by_token(api_token)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Ungültiger Token")
+    user_service.update_notification_settings(
+        user["id"], telegram_chat_id, ntfy_topic, notify_email
+    )
+    return {"ok": True, "hint": "Kanäle aktualisiert — neue Wohnungs-Treffer landen dort."}
