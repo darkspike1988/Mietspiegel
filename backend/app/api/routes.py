@@ -13,7 +13,7 @@ from fastapi import (
     UploadFile,
     status,
 )
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.schemas.contracts import (
     CityInfo,
@@ -48,6 +48,7 @@ from app.schemas.tools import (
     SparrechnerRequest,
     SparrechnerResponse,
 )
+from app.schemas.wohnprofil import WohnprofilRequest, WohnprofilResponse
 from app.services import (
     pdf_parser,
     rent_engine,
@@ -499,3 +500,83 @@ async def archived_listings(profile_id: int, limit: int = 100) -> SearchResultsR
         total_seen=storage.count_listings(profile_id),
         listings=listings,
     )
+
+
+# ----------------------------------------------------------------------
+# Kombination: Suchtreffer × Mietspiegel-Abweichung × Wohnkosten
+# ----------------------------------------------------------------------
+
+
+class BudgetCheckRequest(BaseModel):
+    """Wohnkosten-Budget: Setzt Miete + passende Anteile ins Verhältnis."""
+    cold_rent_eur: float
+    net_income_eur: float = Field(..., gt=0, description="Nettoeinkommen/Monat")
+    nebenkosten_eur: float = Field(0, ge=0, description="NK-Vorauszahlung")
+    strom_eur: float = Field(0, ge=0, description="Strom/Monat (Ø 40-60 €)")
+
+
+class BudgetCheckResponse(BaseModel):
+    ok: bool = True
+    total_housing_cost_eur: float
+    cost_percent_of_income: float
+    fair_share_ok: bool
+    hint: str
+
+
+@api_router.post("/wohnkosten/budget", response_model=BudgetCheckResponse)
+async def wohnkosten_budget(req: BudgetCheckRequest) -> BudgetCheckResponse:
+    """30 %-Faustregel prüfen: Miete + NK + Strom vs. Einkommen."""
+    total = round(req.cold_rent_eur + req.nebenkosten_eur + req.strom_eur, 2)
+    pct = round(total / req.net_income_eur * 100, 1)
+    ok = pct <= 30.0
+    hint = (
+        f"{pct} % des Einkommens — im grünen Bereich (Faustregel: max. 30 %)."
+        if ok
+        else (
+            f"⚠️ {pct} % des Einkommens — über der 30 %-Faustregel. "
+            "Entweder mehr Einkommen, kleinere Wohnung oder Mietspiegel-Widerspruch: "
+            f"Bei Überhöhung kann die Mietpreisbremse (§556d BGB) entlasten — "
+            "nutze den Mietpreis-Check."
+        )
+    )
+    return BudgetCheckResponse(
+        total_housing_cost_eur=total,
+        cost_percent_of_income=pct,
+        fair_share_ok=ok,
+        hint=hint,
+    )
+
+
+@api_router.get("/search/market/{profile_id}")
+async def search_market_stats(profile_id: int) -> dict:
+    """Mietspiegel-Marktstatistik eines Profils: Wie viel % der Treffer
+    sind überhöht? Was kostet der Markt im Schnitt über dem Mietspiegel?"""
+    from app.schemas.search_agent import CheckedListing
+    from app.services import storage, tariff_stats
+
+    row = storage.get_profile(profile_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail=f"Profil {profile_id} nicht gefunden")
+    raw = storage.list_listings(profile_id, limit=500)
+    listings = []
+    for item in raw:
+        try:
+            listings.append(CheckedListing.model_validate(item))
+        except Exception:
+            continue
+    stats = tariff_stats.compute_market_stats(listings)
+    return stats.model_dump()
+
+
+# ----------------------------------------------------------------------
+# Wohnprofil-Modell (kombiniert Mietspiegel × Budget × Markt)
+# ----------------------------------------------------------------------
+
+@api_router.post("/wohnprofil", response_model=WohnprofilResponse)
+async def wohnprofil(req: WohnprofilRequest) -> WohnprofilResponse:
+    """Das Kombinations-Modell: Eine Wohnung (z.B. aus dem Such-Agent)
+    + Einkommen + optional Marktstatistik → Score 0-100 mit Ampel und
+    nachvollziehbarer Begründung je Dimension (kein Blackbox)."""
+    from app.services import wohnprofil as wp
+
+    return wp.compute_wohnprofil(req)

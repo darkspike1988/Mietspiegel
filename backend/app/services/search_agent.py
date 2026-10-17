@@ -247,11 +247,20 @@ def _check_listing(listing: Listing) -> CheckedListing:
         (listing.cold_rent_eur - fair) / fair * 100, 2
     )
     verdict = rent_engine.classify_verdict(delta)
+    overpayment_year: float | None = None
+    if listing.cold_rent_eur and listing.cold_rent_eur > fair:
+        overpayment_year = round(
+            (listing.cold_rent_eur - fair) * 12, 2
+        )
+    recommendation = rent_engine.RECOMMENDATIONS[verdict]
     return CheckedListing(
         **listing.model_dump(),
         rent_badge=RentBadge(verdict.value),
         fair_rent_eur=fair,
         delta_percent=delta,
+        overpayment_eur_per_year=overpayment_year,
+        legal_basis=rent_engine.LEGAL_BASIS[verdict],
+        recommendation=recommendation,
     )
 
 

@@ -17,6 +17,7 @@ from statistics import median
 import structlog
 
 from app.schemas.tariff_stats import (
+    MarketStats,
     Portal,
     PortalStats,
     SmardTimeStats,
@@ -217,3 +218,86 @@ def reset_store() -> None:
     from app.services import storage
 
     storage.reset_db_for_tests()
+
+
+# ----------------------------------------------------------------------
+# Markt-Statistik: Mietspiegel-Abweichung aller Treffer eines Profils
+# ----------------------------------------------------------------------
+
+
+
+def compute_market_stats(checked_listings: list) -> MarketStats:
+    """Mietspiegel-Abweichungen aller geprüften Treffer aggregieren.
+
+    Kombiniert den Such-Agent mit der Mietspiegel-Engine: Wie viel %
+    der gefundenen Angebote sind fair / überhöht / Wucher? Was kostet
+    die Überzahlung im Schnitt? Für welche Stadt/PLZ?
+    """
+    total = len(checked_listings)
+    if total == 0:
+        return MarketStats(
+            total_listings=0,
+            insight="Keine Treffer zum Auswerten.",
+        )
+
+    badges = [li.rent_badge.value for li in checked_listings]
+    fair = badges.count("fair")
+    tolerance = badges.count("tolerance")
+    brake = badges.count("brake")
+    wucher = badges.count("wucher")
+    unknown = badges.count("unknown")
+
+    deltas = [
+        li.delta_percent for li in checked_listings if li.delta_percent is not None
+    ]
+    overpayments = [
+        li.overpayment_eur_per_year
+        for li in checked_listings
+        if li.overpayment_eur_per_year
+    ]
+
+    overpriced = brake + wucher
+    overpriced_pct = round(overpriced / total * 100, 1)
+    avg_delta = round(sum(deltas) / len(deltas), 1) if deltas else None
+    total_overpay = round(sum(overpayments), 2) if overpayments else 0.0
+    avg_overpay = (
+        round(total_overpay / len(overpayments), 2) if overpayments else None
+    )
+
+    cities = {li.city for li in checked_listings if li.city}
+    plzs = {li.postal_code for li in checked_listings if li.postal_code}
+    region = ", ".join(sorted(cities)) if cities else (
+        ", ".join(sorted(plzs)) if plzs else "unbekannt"
+    )
+
+    insight = (
+        f"{overpriced_pct} % der {total} Angebote verletzen die "
+        f"Mietpreisbremse oder sind Wucher ({brake} × §556d-Verdacht, "
+        f"{wucher} × Wucher-Verdacht). "
+        + (
+            f"Durchschnittliche Abweichung: {avg_delta:+.1f} %, "
+            f"mittlere Überzahlung {avg_overpay:.0f} €/Jahr pro Wohnung."
+            if avg_delta is not None and avg_overpay
+            else ""
+        )
+        + (
+            " Tipp: Nur ✅-Treffer besichtigen — der Rest ist Verhandlungssache"
+            " oder ein Fall für den Widerspruch."
+            if overpriced_pct > 30
+            else " Markt wirkt überwiegend ortsüblich."
+        )
+    )
+    return MarketStats(
+        total_listings=total,
+        fair_count=fair,
+        tolerance_count=tolerance,
+        brake_count=brake,
+        wucher_count=wucher,
+        unknown_count=unknown,
+        overpriced_percent=overpriced_pct,
+        avg_delta_percent=avg_delta,
+        avg_overpayment_eur_per_year=avg_overpay,
+        total_overpayment_eur_per_year=total_overpay,
+        region=region,
+        insight=insight,
+    )

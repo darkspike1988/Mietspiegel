@@ -90,3 +90,22 @@ __all__ = [
     "TariffStatisticsResponse",
     "SmardTimeStats",
 ]
+
+
+class MarketStats(BaseModel):
+    """Mietspiegel-Marktstatistik über alle Suchtreffer eines Profils."""
+    total_listings: int
+    fair_count: int = 0
+    tolerance_count: int = 0
+    brake_count: int = 0
+    wucher_count: int = 0
+    unknown_count: int = 0
+    overpriced_percent: float = 0.0
+    avg_delta_percent: float | None = None
+    avg_overpayment_eur_per_year: float | None = None
+    total_overpayment_eur_per_year: float = 0.0
+    region: str = "unbekannt"
+    insight: str
+
+
+__all__.append("MarketStats")

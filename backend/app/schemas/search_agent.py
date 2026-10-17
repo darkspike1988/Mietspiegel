@@ -84,10 +84,20 @@ class RentBadge(Enum):
 
 
 class CheckedListing(Listing):
-    """Treffer mit integriertem Mietpreis-Check."""
+    """Treffer mit integriertem Mietpreis-Check (Wohnprofil)."""
     rent_badge: RentBadge = RentBadge.UNKNOWN
     fair_rent_eur: float | None = None
     delta_percent: float | None = None
+    overpayment_eur_per_year: float | None = Field(
+        None,
+        description="Überzahlung vs. Mietspiegel in €/Jahr (nur wenn Miete > fair)",
+    )
+    legal_basis: str | None = Field(
+        None, description="§556d BGB / §5 WiStrG je nach Badge-Stufe"
+    )
+    recommendation: str | None = Field(
+        None, description="Konkrete Handlungsempfehlung für diese Wohnung"
+    )
 
 
 class RefreshResponse(BaseModel):
