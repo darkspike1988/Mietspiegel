@@ -1,0 +1,109 @@
+---
+/**
+ * DSGVO-Datenschutzerklärung — Pflichtseite, datenschutzfreundlich formuliert
+ * (keine Cookies außer localStorage, keine Tracker).
+ */
+import Layout from "../layouts/Layout.astro";
+import Nav from "../components/Nav.astro";
+---
+<Layout title="Datenschutzerklärung">
+  <Nav />
+  <main class="legal-page">
+    <h1>Datenschutzerklärung</h1>
+    <p class="stand">Stand: [DATUM]</p>
+
+    <h2>1. Verantwortlicher</h2>
+    <p>[VORNAME NACHNAME], [ADRESSE], E-Mail: <a href="mailto:[E-MAIL]">[E-MAIL]</a></p>
+
+    <h2>2. Verarbeitung auf einen Blick</h2>
+    <p>Diese Website läuft <strong>datenschutzfreundlich</strong>:</p>
+    <ul>
+      <li>❌ Keine Tracking-Cookies</li>
+      <li>❌ Keine Werbenetzwerke (Google Analytics, Facebook Pixel etc.)</li>
+      <li>❌ Keine Profilbildung oder Werbe-Tracking</li>
+      <li>✅ Nur technisch notwendige Speicherung im <strong>localStorage deines Browsers</strong></li>
+    </ul>
+
+    <h2>3. Verarbeitete Daten & Zwecke</h2>
+    <table>
+      <tr><th>Daten</th><th>Zweck</th><th>Rechtsgrundlage</th><th>Speicherort</th></tr>
+      <tr>
+        <td>Login-Token, Einstellungen</td>
+        <td>Login-Funktion</td>
+        <td>Art. 6(1)(b) DSGVO — technisch erforderlich</td>
+        <td>localStorage (nur dein Gerät)</td>
+      </tr>
+      <tr>
+        <td>E-Mail, Passwort-Hash (PBKDF2), API-Token</td>
+        <td>Account-Verwaltung</td>
+        <td>Art. 6(1)(b) DSGVO — Vertragserfüllung</td>
+        <td>Server-Datenbank (Hetzner, Deutschland)</td>
+      </tr>
+      <tr>
+        <td>Suchprofile (Ort, Portal-URL)</td>
+        <td>Wohnungssuche-Benachrichtigungen</td>
+        <td>Art. 6(1)(b) DSGVO — Vertragserfüllung</td>
+        <td>Server-Datenbank</td>
+      </tr>
+      <tr>
+        <td>Preis-Beobachtungen (anonym)</td>
+        <td>Statistische Auswertung</td>
+        <td>Art. 6(1)(f) DSGVO — berechtigtes Interesse</td>
+        <td>Server-Datenbank (ohne Personenbezug)</td>
+      </tr>
+      <tr>
+        <td>Vertrags-PDF (nur mit Einwilligung)</td>
+        <td>KI-Auswertung via Mistral</td>
+        <td>Art. 6(1)(a) DSGVO — Einwilligung (jederzeit widerrufbar)</td>
+        <td>Verarbeitung bei Mistral (EU/Paris), keine dauerhafte Speicherung durch uns</td>
+      </tr>
+    </table>
+
+    <h2>4. KI-Verarbeitung (Mistral)</h2>
+    <p>
+      Beim Upload eines Vertrags-PDF kann der Inhalt zur Analyse an
+      <strong>Mistral AI (Sitz: Paris, EU)</strong> übertragen werden.
+      Dies geschieht <strong>ausschließlich mit deiner aktiven Einwilligung</strong>
+      (siehe Cookie-Banner). Du kannst die Einwilligung jederzeit widerrufen
+      (Banner erneut anzeigen über <a href="#" onclick="localStorage.removeItem('mietspiegel_consent');location.reload();return false;">Einwilligung zurücksetzen</a>).
+    </p>
+
+    <h2>5. Externe Dienste</h2>
+    <ul>
+      <li><strong>ImmoScout, Immowelt, Kleinanzeigen, WG-Gesucht</strong>: Abruf öffentlicher Suchergebnisse (keine Account-Daten von dir)</li>
+      <li><strong>Telegram/ntfy.sh</strong>: Benachrichtigungen nur wenn du Kanäle aktiv konfigurierst</li>
+      <li><strong>Google/Apple-Login</strong>: OAuth-Authentifizierung (nur E-Mail, kein Profilzugriff)</li>
+    </ul>
+
+    <h2>6. Deine Rechte</h2>
+    <p>
+      Du hast jederzeit das Recht auf:
+      <strong>Auskunft (Art. 15), Berichtigung (Art. 16), Löschung (Art. 17),
+      Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20),
+      Widerspruch (Art. 21)</strong> und <strong>Widerruf von Einwilligungen (Art. 7)</strong>.
+      Nutze hierfür die <a href="/login">Account-Löschung</a> oder kontaktiere
+      <a href="mailto:[E-MAIL]">[E-MAIL]</a>. Zudem kannst du dich bei einer
+      Datenschutz-Aufsichtsbehörde beschweren.
+    </p>
+
+    <h2>7. Datensicherheit</h2>
+    <p>
+      Passwörter werden mit PBKDF2 (260.000 Iterationen, gesalzen) gehasht.
+      Optionaler Zweifaktor-Schutz (TOTP) ist verfügbar. Übertragung erfolgt
+      TLS-verschlüsselt.
+    </p>
+
+    <p class="hint">
+      ⚠️ Platzhalter im <a href="/setup">Einrichtungsassistenten</a> ausfüllen.
+    </p>
+  </main>
+</Layout>
+<style>
+  .legal-page { max-width: 800px; margin: 0 auto 3rem; padding: 2rem 1rem; line-height: 1.65; }
+  .legal-page h1 { color: var(--color-accent); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin: 1rem 0; }
+  th, td { border: 1px solid #ddd; padding: 0.5rem; text-align: left; vertical-align: top; }
+  th { background: #f2f2f2; }
+  .hint { background: #fff8e8; padding: 0.8rem; border-radius: 8px; }
+  .stand { color: #666; }
+</style>

@@ -1,21 +1,47 @@
-MIT License
+Mietlotse / Mietspiegel-AI — Source Available License
 
 Copyright (c) 2026 Michael (impedire)
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This software and its documentation (the "Software") is made available
+under the following terms, which combine the Apache License 2.0 baseline
+(source: https://www.apache.org/licenses/LICENSE-2.0) with the two
+additional conditions below.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+ADDITIONAL CONDITIONS (in the spirit of the Commons Clause and Fredy's
+attribution clause):
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+1. NON-COMMERCIAL DISTRIBUTION CLAUSE
+   You MAY use, copy, modify, and self-host the Software free of charge
+   for personal and non-commercial purposes. You MAY NOT sell the
+   Software, or offer a product or service whose value derives
+   entirely or substantially from the Software, without prior written
+   permission of the copyright holder. Operating the Software as a
+   free public service (accepting voluntary donations to cover hosting
+   costs) is explicitly permitted.
+
+2. ATTRIBUTION AND NAMING CLAUSE
+   Substantial derivative works must credit the original project
+   ("Mietspiegel-AI" / its author) in a prominent place (README,
+   about page, or equivalent) and may not use the project name or
+   derivatives of it to imply endorsement by the original author.
+
+GRANT
+Subject to the conditions above and the terms of the Apache License 2.0
+incorporated herein by reference (including its patent, contribution
+and redistribution provisions), the copyright holder grants you a
+perpetual, worldwide, non-exclusive license to use, reproduce, modify
+and distribute the Software.
+
+DISCLAIMER OF WARRANTY AND LIMITATION OF LIABILITY
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+NOTICE
+This project is "source available", not OSI-certified open source,
+because of the non-commercial clause. If you wish to use the Software
+commercially, contact the copyright holder.

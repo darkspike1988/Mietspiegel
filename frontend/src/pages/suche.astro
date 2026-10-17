@@ -405,17 +405,31 @@ import Donate from "../components/Donate.astro";
   document.getElementById("ort-save-agent")?.addEventListener("click", async () => {
     const query = (document.getElementById("ort-input") as HTMLInputElement | null)?.value?.trim() ?? "";
     const token = localStorage.getItem("mietspiegel_token");
+    let saved = 0;
+    let limitMsg: string | null = null;
     for (const entry of savedAgentUrls) {
       try {
-        await fetch(`${SB}/api/search/profiles?api_token=${token ?? ""}`, {
+        const r = await fetch(`${SB}/api/search/profiles?api_token=${token ?? ""}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name: `${query} (${entry.portal})`, url: entry.url }),
         });
-      } catch { /* weiter */ }
+        if (r.status === 201) { saved++; }
+        else if (r.status === 402) { limitMsg = (await r.json()).detail ?? "Limit erreicht"; break; }
+      } catch { /* Netzwerkfehler weiter */ }
     }
     const saveBtn = document.getElementById("ort-save-agent") as HTMLButtonElement | null;
-    if (saveBtn) { saveBtn.textContent = `✅ ${savedAgentUrls.length} Profile gespeichert!`; saveBtn.disabled = true; }
+    const hintEl = document.getElementById("ort-hint");
+    if (saveBtn) {
+      if (limitMsg) {
+        saveBtn.textContent = `⚠️ ${saved} gespeichert — ${limitMsg}`;
+        if (hintEl) hintEl.innerHTML = `⚠️ ${saved} von ${savedAgentUrls.length} Portalen gespeichert. ` +
+          `<strong>${limitMsg}</strong> <a href="/preise" style="color:#0066cc;">Pläne ansehen →</a>`;
+      } else {
+        saveBtn.textContent = `✅ ${saved} Profile gespeichert!`;
+        saveBtn.disabled = true;
+      }
+    }
     await loadProfiles();
   });
 

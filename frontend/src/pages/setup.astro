@@ -1,0 +1,149 @@
+---
+/**
+ * Einrichtungsassistent — einmaliger Setup-Wizard für den Betreiber.
+ * Führt durch alle rechtlichen & technischen Pflichten vor dem Live-Gang.
+ */
+import Layout from "../layouts/Layout.astro";
+import Nav from "../components/Nav.astro";
+---
+<Layout title="Einrichtungsassistent">
+  <Nav />
+  <main class="setup-page">
+    <h1>🚀 Einrichtungsassistent</h1>
+    <p class="lede">
+      Führt dich durch alle Schritte vor dem Live-Gang — rechtliche Pflichten,
+      technische Konfiguration und Go-Live-Checkliste.
+    </p>
+
+    <section class="step">
+      <h2>✅ Schritt 1: Rechtliches</h2>
+      <ul class="checklist">
+        <li>
+          <input type="checkbox" id="chk-impressum" />
+          <label for="chk-impressum">
+            <a href="/impressum" target="_blank">Impressum</a> — alle [PLATZHALTER] ausgefüllt
+          </label>
+        </li>
+        <li>
+          <input type="checkbox" id="chk-datenschutz" />
+          <label for="chk-datenschutz">
+            <a href="/datenschutz" target="_blank">Datenschutzerklärung</a> — [PLATZHALTER] ausgefüllt
+          </label>
+        </li>
+        <li>
+          <input type="checkbox" id="chk-agb" />
+          <label for="chk-agb">
+            <a href="/agb" target="_blank">AGB</a> — [DATUM] gesetzt
+          </label>
+        </li>
+        <li>
+          <input type="checkbox" id="chk-gewerbe" />
+          <label for="chk-gewerbe">
+            Gewerbeanmeldung beim Finanzamt (falls Geld fließt: Verivox, Spenden, Abos)
+          </label>
+        </li>
+      </ul>
+      <p class="hint">
+        ⚠️ Alle Platzhalter in den drei Seiten ersetzen. Für eine anwaltliche
+        Prüfung der AGB/Datenschutz-Texte (empfohlen, ~200-500 €) Kontakt
+        aufnehmen. Diese Vorlagen sind Startpunkte, keine Rechtsberatung.
+      </p>
+    </section>
+
+    <section class="step">
+      <h2>⚙️ Schritt 2: Technische Konfiguration (Server)</h2>
+      <div class="config-block">
+        <h3>Backend .env — Pflichtwerte</h3>
+        <pre>MISTRAL_API_KEY=          # optional (KI-Features, ohne läuft App trotzdem)
+TELEGRAM_BOT_TOKEN=       # optional (Bot + Benachrichtigungen)
+SMTP_HOST=                # optional (E-Mail-Benachrichtigungen)
+SMTP_USER=
+SMTP_PASSWORD=
+SEARCH_SCHEDULER_ENABLED=1  # Standard: an
+OAUTH_REDIRECT_BASE=https://deine-domain.de  # für Google/Apple-Login</pre>
+      </div>
+      <div class="config-block">
+        <h3>Google-Login aktivieren</h3>
+        <ol>
+          <li>console.cloud.google.com → OAuth 2.0 Client (Web) erstellen</li>
+          <li>Redirect: <code>https://deine-domain.de/auth/callback/google</code></li>
+          <li><code>GOOGLE_CLIENT_ID=</code> + <code>GOOGLE_CLIENT_SECRET=</code> in .env</li>
+        </ol>
+      </div>
+      <div class="config-block">
+        <h3>Apple-Login aktivieren</h3>
+        <ol>
+          <li>developer.apple.com → Sign in with Apple → Services-ID + Key (.p8)</li>
+          <li>Redirect registrieren, <code>APPLE_*=</code> in .env</li>
+        </ol>
+      </div>
+      <div class="config-block">
+        <h3>Verivox (Provisionen)</h3>
+        <ol>
+          <li><a href="https://www.verivox.de/partnerprogramm/" target="_blank" rel="noopener noreferrer">Partnerprogramm registrieren</a></li>
+          <li><code>VERIVOX_PARTNER_ID=</code> in .env setzen</li>
+          <li>iframe-Schnipsel aus dem Partner-Dashboard → <code>VERIVOX_IFRAME_URL=</code></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="step">
+      <h2>🚀 Schritt 3: Server-Deployment (Hetzner)</h2>
+      <p>
+        Komplette Anleitung:
+        <a href="https://github.com/darkspike1988/Mietspiegel/blob/main/docs/HETZNER_DEPLOYMENT.md" target="_blank" rel="noopener noreferrer">
+          docs/HETZNER_DEPLOYMENT.md</a>
+      </p>
+      <ul class="checklist">
+        <li><input type="checkbox" id="chk-server" /> <label for="chk-server">Server bestellt (CX22 reicht für 1.000 User)</label></li>
+        <li><input type="checkbox" id="chk-ssl" /> <label for="chk-ssl">nginx + Let's Encrypt (HTTPS) eingerichtet</label></li>
+        <li><input type="checkbox" id="chk-systemd" /> <label for="chk-systemd">systemd-Service (24/7) aktiviert</label></li>
+        <li><input type="checkbox" id="chk-frontend" /> <label for="chk-frontend">Frontend gebaut (npm run build) und dist/ ausgeliefert</label></li>
+        <li><input type="checkbox" id="chk-backup" /> <label for="chk-backup">Backup für data/app.db eingerichtet (cron)</label></li>
+      </ul>
+    </section>
+
+    <section class="step">
+      <h2>🎯 Schritt 4: Go-Live-Check</h2>
+      <ul class="checklist">
+        <li><input type="checkbox" id="chk-e2e" /> <label for="chk-e2e">Registrierung → Login → Such-Agent → 2FA funktioniert im Browser</label></li>
+        <li><input type="checkbox" id="chk-bot" /> <label for="chk-bot">Telegram-Bot: <code>/check 850 60 10117</code> antwortet</label></li>
+        <li><input type="checkbox" id="chk-pages" /> <label for="chk-pages">Alle 12 Seiten im Browser erreichbar (inkl. Impressum/Datenschutz/AGB)</label></li>
+        <li><input type="checkbox" id="chk-dsgvo" /> <label for="chk-dsgvo">Cookie-Banner erscheint bei erstem Besuch</label></li>
+        <li><input type="checkbox" id="chk-klausel" /> <label for="chk-klausel">Klausel-Check ohne Mistral-Key funktioniert (deterministisch)</label></li>
+      </ul>
+    </section>
+
+    <section class="step">
+      <h2>📊 Projekt-Status: „Kostenloses Projekt"</h2>
+      <p>
+        Solange du <strong>kein Geld nimmst</strong> (Verivox aus, keine Abos,
+        Spenden optional), läuft die App als <strong>privates, nicht-
+        kommerzielles Projekt</strong>. Das reduziert rechtliche Pflichten:
+      </p>
+      <ul>
+        <li>✅ <strong>Keine AGB-Pflicht</strong> im engeren Sinn (trotzdem vorhanden = gut)</li>
+        <li>✅ <strong>Kein Widerrufsrecht</strong> für User (keine Verträge)</li>
+        <li>⚠️ Impressum + Datenschutz bleiben <strong>Pflicht</strong> (auch für private Sites mit Traffic)</li>
+        <li>⚠️ Sobald Provisionen fließen → Gewerbe + kommerzielle Regeln</li>
+      </ul>
+    </section>
+  </main>
+</Layout>
+<style>
+  .setup-page { max-width: 860px; margin: 0 auto 3rem; padding: 0 1rem; }
+  h1 { color: var(--color-accent); text-align: center; }
+  .lede { text-align: center; color: #666; margin-bottom: 2rem; }
+  .step { background: #f8f9fb; border: 1px solid #e0e4ea; border-radius: 12px; padding: 1.5rem; margin: 1.2rem 0; }
+  .step h2 { margin-top: 0; }
+  .checklist { list-style: none; padding: 0; }
+  .checklist li { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0; font-size: 0.95rem; }
+  .checklist input[type="checkbox"] { width: 20px; height: 20px; }
+  .config-block { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 1rem; margin: 0.8rem 0; }
+  .config-block h3 { margin: 0 0 0.5rem; font-size: 1rem; }
+  pre { background: #2d2d2d; color: #f8f8f2; padding: 0.8rem; border-radius: 6px; font-size: 0.82rem; overflow-x: auto; }
+  ol, ul { padding-left: 1.2rem; }
+  li { margin: 0.3rem 0; }
+  .hint { background: #fff8e8; padding: 0.8rem; border-radius: 8px; font-size: 0.9rem; }
+  code { background: #eef; padding: 0.1rem 0.4rem; border-radius: 4px; }
+</style>

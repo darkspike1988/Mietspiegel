@@ -46,6 +46,11 @@ import Donate from "../components/Donate.astro";
           <label> Passwort (min. 8 Zeichen)
             <input type="password" id="rg-pass" minlength="8" required />
           </label>
+          <label class="check">
+            <input type="checkbox" id="rg-agb" required />
+            Ich akzeptiere die <a href="/agb" target="_blank">AGB</a> und die
+            <a href="/datenschutz" target="_blank">Datenschutzerklärung</a>.
+          </label>
           <button type="submit">Account erstellen</button>
           <p class="error" id="rg-error" hidden></p>
           <p class="hint" id="rg-success" hidden></p>

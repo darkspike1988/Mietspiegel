@@ -1,0 +1,67 @@
+---
+/**
+ * Impressum (§5 DDG) — Pflichtseite. Platzhalter müssen beim
+ * Einrichtungsassistenten (/setup) ausgefüllt werden.
+ */
+import Layout from "../layouts/Layout.astro";
+import Nav from "../components/Nav.astro";
+---
+<Layout title="Impressum">
+  <Nav />
+  <main class="legal-page">
+    <h1>Impressum</h1>
+    <h2>Angaben gemäß § 5 DDG</h2>
+    <p>
+      <strong>Diensteanbieter:</strong><br />
+      [VORNAME NACHNAME]<br />
+      [STRAßE HAUSNUMMER]<br />
+      [PLZ ORT]<br />
+      Deutschland
+    </p>
+    <p>
+      <strong>Kontakt:</strong><br />
+      E-Mail: <a href="mailto:[E-MAIL]">[E-MAIL]</a>
+    </p>
+    <p>
+      <strong>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV:</strong><br />
+      [VORNAME NACHNAME], Anschrift wie oben
+    </p>
+    <h2>Umsatzsteuer-ID</h2>
+    <p>Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG: [UST-ID oder „nicht vorhanden“]</p>
+    <h2>Streitschlichtung</h2>
+    <p>
+      Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor
+      einer Verbraucherschlichtungsstelle teilzunehmen.
+    </p>
+    <h2>Haftung für Inhalte</h2>
+    <p>
+      Als Diensteanbieter sind wir für eigene Inhalte auf diesen Seiten nach den
+      allgemeinen Gesetzen verantwortlich. Diese Website bietet
+      <strong>Rechtsinformationen, keine Rechtsberatung</strong> (§ 2 RDG).
+      Alle Auswertungen erfolgen deterministisch auf Basis öffentlich
+      zugänglicher Gesetze und Quellen, ohne Gewähr für Richtigkeit und
+      Vollständigkeit.
+    </p>
+    <h2>Haftung für Links</h2>
+    <p>
+      Diese Website enthält Links zu externen Websites Dritter (z.B.
+      Mietspiegel, Behörden), auf deren Inhalte wir keinen Einfluss haben.
+      Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter
+      verantwortlich.
+    </p>
+    <h2>Urheberrecht</h2>
+    <p>
+      Die Inhalte dieser Website unterliegen der Projekt-Lizenz (siehe
+      <a href="/agb">AGB</a> und Repository). Mietspiegel-Daten stammen aus
+      amtlichen Quellen mit entsprechendem Quellenachweis.
+    </p>
+    <p class="hint">
+      ⚠️ Platzhalter ausfüllen im <a href="/setup">Einrichtungsassistenten</a> vor dem Live-Gang.
+    </p>
+  </main>
+</Layout>
+<style>
+  .legal-page { max-width: 780px; margin: 0 auto 3rem; padding: 2rem 1rem; line-height: 1.65; }
+  .legal-page h1 { color: var(--color-accent); }
+  .hint { background: #fff8e8; padding: 0.8rem; border-radius: 8px; }
+</style>

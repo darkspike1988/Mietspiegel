@@ -903,3 +903,74 @@ async def portfolio_get(api_token: str) -> PortfolioResponse:
     if user is None:
         raise HTTPException(status_code=401, detail="Ungültiger Token")
     return portfolio.get_portfolio_response(user["id"])
+
+
+# ----------------------------------------------------------------------
+# DSGVO-Rechte: Daten-Export (Art. 20) & Account-Löschung (Art. 17)
+# ----------------------------------------------------------------------
+
+@api_router.get("/dsgvo/export")
+async def dsgvo_export(api_token: str) -> dict:
+    """Art. 20 DSGVO: Alle Daten des Users als strukturiertes JSON
+    (Datenübertragbarkeit)."""
+    from app.services import portfolio, storage, user_service
+
+    user = user_service.user_by_token(api_token)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Ungültiger Token")
+    conn = storage._get_conn()
+    profiles = conn.execute(
+        "SELECT name, url, city, created_at FROM search_profiles "
+        "WHERE user_id = ?", (user["id"],),
+    ).fetchall()
+    return {
+        "ok": True,
+        "hinweis": "Deine Daten gemäß Art. 20 DSGVO (Datenübertragbarkeit).",
+        "account": {
+            "email": user["email"],
+            "benachrichtigungen": {
+                "telegram": bool(user["telegram_chat_id"]),
+                "ntfy": bool(user["ntfy_topic"]),
+                "email": user["notify_email"],
+            },
+        },
+        "suchprofile": [
+            {"name": r[0], "url": r[1], "stadt": r[2], "angelegt": r[3]}
+            for r in profiles
+        ],
+        "portfolio": portfolio.list_properties(user["id"]),
+    }
+
+
+@api_router.delete("/dsgvo/loeschen")
+async def dsgvo_loeschen(api_token: str) -> dict:
+    """Art. 17 DSGVO: Account + alle zugehörigen Daten löschen."""
+    from app.services import storage, user_service
+
+    user = user_service.user_by_token(api_token)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Ungültiger Token")
+    conn = storage._get_conn()
+    with storage._lock:
+        conn.execute(
+            "UPDATE users SET active = 0, email = 'geloescht+' || id || '@invalid', "
+            "password_hash = X'00', api_token = 'revoked-' || id, "
+            "telegram_chat_id = NULL, ntfy_topic = NULL, twofactor_secret = NULL "
+            "WHERE id = ?",
+            (user["id"],),
+        )
+        conn.execute(
+            "DELETE FROM search_profiles WHERE user_id = ?", (user["id"],)
+        )
+        conn.execute(
+            "DELETE FROM portfolio_props WHERE user_id = ?", (user["id"],)
+        )
+        conn.commit()
+    return {
+        "ok": True,
+        "hinweis": (
+            "Account gelöscht (Art. 17 DSGVO). E-Mail anonymisiert, Token "
+            "widerrufen, Profile und Portfolio entfernt. "
+            "Vor der Löschung kannst du deine Daten mit /dsgvo/export sichern."
+        ),
+    }

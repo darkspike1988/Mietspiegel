@@ -1,0 +1,83 @@
+---
+/**
+ * LegalBanner — DSGVO-Einwilligung: Essential-Speicherung + optional Mistral,
+ * mit Bestätigungs-Verarbeitung. Kein Tracking, keine Werbung.
+ */
+---
+<div id="consent-root"></div>
+
+<script>
+  const CONSENT_KEY = "mietspiegel_consent";
+  let decision: { version: number; essential: boolean; mistral: boolean; timestamp: string } | null = null;
+  try {
+    decision = JSON.parse(localStorage.getItem(CONSENT_KEY) || "null");
+  } catch { decision = null; }
+
+  const needsBanner = !decision || decision.version !== 1;
+  const root = document.getElementById("consent-root");
+
+  if (needsBanner && root) {
+    const banner = document.createElement("div");
+    banner.id = "consent-banner";
+    banner.style.cssText = [
+      "position:fixed","bottom:0","left:0","right:0","z-index:9999",
+      "background:#1a2a3a","color:#d0d8e0","padding:1.2rem 1.5rem",
+      "font-family:system-ui,sans-serif","font-size:0.9rem",
+      "box-shadow:0 -4px 20px rgba(0,0,0,0.3)",
+      "max-height:45vh","overflow-y:auto",
+    ].join(";");
+    banner.innerHTML = `
+      <div style="max-width:860px;margin:0 auto;">
+        <strong>🍪 Datenschutzhinweis</strong>
+        <p style="margin:0.6rem 0;">
+          Diese Website verwendet <strong>ausschließlich technisch notwendige
+          Speicherung</strong> (Login-Token und Einstellungen im localStorage
+          deines Browsers). <strong>Kein Tracking, keine Werbung, keine
+          Dritt-Cookies.</strong><br />
+          Optionale Funktion: <strong>KI-Auswertung</strong> — beim Upload eines
+          Vertrags-PDFs wird der Text zur Analyse an Mistral (EU/Paris)
+          übertragen. Diese Funktion ist standardmäßig <strong>aus</strong> und
+          wird nur mit deiner Einwilligung aktiviert.
+        </p>
+        <p style="margin:0.4rem 0;font-size:0.82rem;color:#8fa3b8;">
+          Details:
+          <a href="/datenschutz" style="color:#7ab3ff;">Datenschutz</a> ·
+          <a href="/agb" style="color:#7ab3ff;">AGB</a> ·
+          <a href="/impressum" style="color:#7ab3ff;">Impressum</a>
+        </p>
+        <div style="margin-top:0.9rem;display:flex;gap:0.7rem;flex-wrap:wrap;">
+          <button id="cb-accept" style="background:#2e7d32;color:white;border:none;padding:0.6rem 1.2rem;border-radius:6px;cursor:pointer;font-weight:600;">
+            ✅ Einverstanden (inkl. KI-Upload)
+          </button>
+          <button id="cb-essential" style="background:#4a5568;color:white;border:none;padding:0.6rem 1.2rem;border-radius:6px;cursor:pointer;">
+            Nur notwendige
+          </button>
+          <button id="cb-deny" style="background:transparent;color:#8fa3b8;border:1px solid #4a5568;padding:0.6rem 1.2rem;border-radius:6px;cursor:pointer;">
+            Ablehnen (KI aus)
+          </button>
+        </div>
+      </div>`;
+    root.appendChild(banner);
+
+    const decide = (mistralConsent: boolean): void => {
+      localStorage.setItem(CONSENT_KEY, JSON.stringify({
+        version: 1,
+        essential: true,
+        mistral: mistralConsent,
+        timestamp: new Date().toISOString(),
+      }));
+      banner.remove();
+    };
+    document.getElementById("cb-accept")?.addEventListener("click", () => decide(true));
+    document.getElementById("cb-essential")?.addEventListener("click", () => decide(false));
+    document.getElementById("cb-deny")?.addEventListener("click", () => decide(false));
+  }
+
+  // API für andere Skripte: darf die KI-Verarbeitung genutzt werden?
+  (window as unknown as Record<string, unknown>).__mistralConsent = (): boolean => {
+    try {
+      const d = JSON.parse(localStorage.getItem(CONSENT_KEY) || "{}");
+      return (d as { mistral?: boolean }).mistral === true;
+    } catch { return false; }
+  };
+</script>

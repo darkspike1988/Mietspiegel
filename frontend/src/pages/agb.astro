@@ -1,0 +1,107 @@
+---
+/**
+ * AGB — Nutzungsbedingungen. Bei Registrierung bestätigt der User diese
+ * (Checkbox im Login-Formular, AGB-Annahme wird protokolliert).
+ */
+import Layout from "../layouts/Layout.astro";
+import Nav from "../components/Nav.astro";
+---
+<Layout title="AGB — Nutzungsbedingungen">
+  <Nav />
+  <main class="legal-page">
+    <h1>Allgemeine Geschäftsbedingungen (AGB)</h1>
+    <p class="stand">Stand: [DATUM]</p>
+
+    <h2>§ 1 Geltungsbereich</h2>
+    <p>
+      Diese Nutzungsbedingungen regeln die Nutzung der Web-Anwendung
+      „Mietspiegel-AI" („die App"). Betreiber ist [NAME, ANSCHRIFT]
+      (siehe <a href="/impressum">Impressum</a>).
+    </p>
+
+    <h2>§ 2 Rechtsinformationen, keine Rechtsberatung</h2>
+    <p>
+      <strong>Wichtig:</strong> Die App liefert automatisierte
+      <strong>Rechtsinformationen</strong> auf Basis öffentlich zugänglicher
+      Gesetze (BGB, BetrKV, WiStrG) und amtlicher Mietspiegel.
+      <strong>Es handelt sich nicht um Rechtsberatung</strong> im Sinne des
+      Rechtsdienstleistungsgesetzes (RDG). Die Ergebnisse stellen keine
+      Bewertung des individuellen Einzelfalls dar. Für eine
+      Einzelfallprüfung wende dich an einen Mieterverein oder Rechtsanwalt.
+    </p>
+
+    <h2>§ 3 Kostenlose Nutzung (Free)</h2>
+    <p>
+      Die Grundfunktionen der App sind <strong>kostenlos</strong>
+      (Mietpreis-Check, Such-Agent mit 1 Profil, Telegram-Bot, Ratgeber).
+      Es besteht <strong>kein Anspruch</strong> auf Verfügbarkeit, Funktion
+      oder Vollständigkeit. Der Betreiber kann Funktionen jederzeit ändern
+      oder einstellen.
+    </p>
+
+    <h2>§ 4 Optionale kostenpflichtige Zusatzfunktionen</h2>
+    <p>
+      „Plus" (4,99 €/Monat) und „Pro" (12,99 €/Monat) bieten erweiterte
+      Funktionen (mehr Suchprofile, KI-Auswertung, Portfolio). Abos sind
+      monatlich kündbar. Zahlungen erfolgen über externe Anbieter
+      (Patreon/PayPal) — die App speichert nur den Plan-Status.
+    </p>
+
+    <h2>§ 5 Nutzer-Verhalten</h2>
+    <p>Der Nutzer verpflichtet sich:</p>
+    <ul>
+      <li>keine automatisierten Massenabfragen gegen die App oder die Portale auszulösen</li>
+      <li>keine gefälschten Daten einzutragen</li>
+      <li>die App nicht für rechtswidrige Zwecke zu nutzen</li>
+    </ul>
+
+    <h2>§ 6 Datenverarbeitung</h2>
+    <p>
+      Die Datenverarbeitung erfolgt gemäß
+      <a href="/datenschutz">Datenschutzerklärung</a>. Mit der Registrierung
+      stimmst du dieser zu.
+    </p>
+
+    <h2>§ 7 Verfügbarkeit & Änderungen an Portal-Quellen</h2>
+    <p>
+      Die App bezieht Daten aus öffentlichen Quellen (ImmoScout, Immowelt,
+      Kleinanzeigen, WG-Gesucht, SMARD/BNetzA, Mietspiegel). Der Betreiber
+      hat keinen Einfluss auf deren Verfügbarkeit. Fällt eine Quelle aus,
+      können betroffene Funktionen eingeschränkt sein, ohne dass Ansprüche
+      entstehen.
+    </p>
+
+    <h2>§ 8 Haftung</h2>
+    <p>
+      Der Betreiber haftet nur für Vorsatz und grobe Fahrlässigkeit.
+      <strong>Alle Auswertungen erfolgen ohne Gewähr für Richtigkeit,
+      Vollständigkeit und Aktualität.</strong> Eine Haftung für
+      Entscheidungen, die auf Basis der App-Auswertungen getroffen werden
+      (z.B. Widerspruch gegen eine Mieterhöhung), ist ausgeschlossen.
+    </p>
+
+    <h2>§ 9 Kündigung / Löschung</h2>
+    <p>
+      Du kannst deinen Account jederzeit löschen
+      (Account-Löschung in der App). Daten werden entfernt, soweit keine
+      gesetzlichen Aufbewahrungspflichten bestehen.
+    </p>
+
+    <h2>§ 10 Schlussbestimmungen</h2>
+    <p>
+      Es gilt deutsches Recht. Änderungen dieser AGB werden auf der Website
+      bekanntgegeben. Mit der Registrierung akzeptierst du diese Bedingungen.
+    </p>
+
+    <p class="hint">
+      ⚠️ Vor dem Live-Gang: [DATUM] setzen und anwaltlich prüfen lassen
+      (dies ist eine Vorlage, keine anwaltliche Beratung).
+    </p>
+  </main>
+</Layout>
+<style>
+  .legal-page { max-width: 800px; margin: 0 auto 3rem; padding: 2rem 1rem; line-height: 1.65; }
+  .legal-page h1 { color: var(--color-accent); }
+  .hint { background: #fff8e8; padding: 0.8rem; border-radius: 8px; }
+  .stand { color: #666; }
+</style>
