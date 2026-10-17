@@ -1,0 +1,90 @@
+---
+/**
+ * Preise — Free · Plus · Pro. Free bleibt vollständig nutzbar.
+ */
+import Layout from "../layouts/Layout.astro";
+import Nav from "../components/Nav.astro";
+---
+<Layout title="Preise — Free, Plus, Pro">
+  <Nav />
+  <header>
+    <h1>💳 Pläne</h1>
+    <p class="lede">
+      Free bleibt für immer vollständig nutzbar. Plus und Pro sind für
+      die, die mehr Automatisierung, LLM-Auswertung oder ein
+      Immobilien-Portfolio brauchen.
+    </p>
+  </header>
+
+  <main class="preise">
+    <div class="cards">
+      <div class="card free">
+        <h2>Free</h2>
+        <p class="price">0 €<span>/Monat</span></p>
+        <ul>
+          <li>✅ Alle Checks (Miete, NK, Kaution, Mieterhöhung)</li>
+          <li>✅ Mietpreis-Badges auf Suchtreffern</li>
+          <li>✅ Such-Agent: 1 Profil</li>
+          <li>✅ Telegram-Bot komplett</li>
+          <li>✅ Ratgeber & Gesetze</li>
+        </ul>
+        <a href="/login" class="btn">Kostenlos starten</a>
+      </div>
+
+      <div class="card plus highlight">
+        <span class="badge">Beliebt</span>
+        <h2>Plus</h2>
+        <p class="price">4,99 €<span>/Monat</span></p>
+        <ul>
+          <li>Alles aus Free, plus:</li>
+          <li>🤖 <strong>LLM-Auswertung</strong>: Mietvertrag-PDF → Klausel-Check (10×/Monat)</li>
+          <li>🤖 LLM-Widerspruchsbrief-Feinschliff</li>
+          <li>📡 10 Such-Profile (mehrere Städte parallel)</li>
+          <li>🔔 Alle 3 Benachrichtigungs-Kanäle</li>
+          <li>📅 Fristen-Erinnerungen (NK, Mieterhöhung)</li>
+        </ul>
+        <a href="/login" class="btn">Plus wählen</a>
+      </div>
+
+      <div class="card pro">
+        <h2>Pro</h2>
+        <p class="price">12,99 €<span>/Monat</span></p>
+        <ul>
+          <li>Alles aus Plus, plus:</li>
+          <li>🏠 <strong>Eigentums-Portfolio</strong>: ETW & Häuser (25 Objekte)</li>
+          <li>📊 Statistische Auswertung (Rendite, Markt-Badges je Objekt)</li>
+          <li>🤖 LLM-Tiefenanalyse 100×/Monat (Kauf-/Mietverträge, Abrechnungen)</li>
+          <li>📡 50 Such-Profile + 5-Min-Polling</li>
+          <li>📄 Export (PDF/CSV)</li>
+          <li>⚡ Priority-Support</li>
+        </ul>
+        <a href="/login" class="btn">Pro wählen</a>
+      </div>
+    </div>
+
+    <p class="hint" style="text-align:center; max-width:640px; margin:2rem auto;">
+      Zahlung läuft über <a href="https://www.patreon.com/c/DARKSPIKE1988" target="_blank" rel="noopener noreferrer">Patreon</a>
+      oder <a href="https://www.paypal.com/paypalme/darkspike1988" target="_blank" rel="noopener noreferrer">PayPal</a> —
+      danach Plan im Account aktivieren. Alle Basis-Tools bleiben kostenlos, für immer.
+    </p>
+  </main>
+</Layout>
+
+<style>
+  h1 { text-align: center; padding: 2rem 1rem 0; color: var(--color-accent); margin: 0; }
+  .lede { text-align: center; color: var(--color-muted); max-width: 640px; margin: 0 auto 2rem; padding: 0 1rem; }
+  .preise { max-width: 1100px; margin: 0 auto 3rem; padding: 0 1rem; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem; }
+  .card { border: 1px solid #e0e4ea; border-radius: 14px; padding: 1.6rem; background: #fff; position: relative; }
+  .card h2 { margin: 0 0 0.4rem; }
+  .price { font-size: 1.9rem; font-weight: 800; margin: 0.4rem 0 1rem; }
+  .price span { font-size: 0.9rem; font-weight: 400; color: #666; }
+  .card ul { list-style: none; padding: 0; margin: 0 0 1.2rem; font-size: 0.92rem; }
+  .card li { margin: 0.45rem 0; padding-left: 0; }
+  .highlight { border: 2px solid #0066cc; box-shadow: 0 4px 20px rgba(0,102,204,0.15); }
+  .badge { position: absolute; top: -12px; right: 16px; background: #0066cc; color: white; padding: 0.25rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
+  .btn { display: block; text-align: center; padding: 0.7rem; background: #0066cc; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; }
+  .free .btn { background: #2e7d32; }
+  .pro .btn { background: #1a237e; }
+  .hint { color: #666; font-size: 0.88rem; }
+</style>

@@ -44,9 +44,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     if os.environ.get("SEARCH_SCHEDULER_ENABLED", "1") == "1":
         from app.services import scheduler
         scheduler.start()
+    from app.services import telegram_bot
+    telegram_bot.start()
     yield
-    from app.services import scheduler
+    from app.services import scheduler, telegram_bot
     scheduler.stop()
+    telegram_bot.stop()
     await app.state.cache.disconnect()
     await app.state.mistral.close()
 

@@ -455,6 +455,10 @@ async def create_search_profile(
         if user is None:
             raise HTTPException(status_code=401, detail="Ungültiger Token")
         user_id = user["id"]
+        from app.services import plan_service
+        allowed, msg = plan_service.check_profile_limit(user_id)
+        if not allowed:
+            raise HTTPException(status_code=402, detail=msg)
 
     pid = storage.save_profile(
         name=req.name, url=str(req.url), provider=req.provider.value,
@@ -795,3 +799,56 @@ async def search_by_location(req: LocationQuery) -> LocationSearchResponse:
     from app.services import location_search
 
     return await location_search.search_by_location(req)
+
+
+# ----------------------------------------------------------------------
+# 3-Stufen-Modell: Free · Plus (4,99 €) · Pro (12,99 €)
+# ----------------------------------------------------------------------
+
+@api_router.get("/plaene")
+async def get_plaene() -> dict:
+    """Die drei Stufen — Free bleibt vollständig nutzbar."""
+    from app.services.plan_service import PLANS
+
+    return {"ok": True, "plaene": PLANS}
+
+
+@api_router.get("/mein-plan")
+async def mein_plan(api_token: str) -> dict:
+    """Aktueller Plan des Users + Limits."""
+    from app.services import plan_service, user_service
+
+    user = user_service.user_by_token(api_token)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Ungültiger Token")
+    plan = plan_service.get_user_plan(user["id"])
+    return {
+        "ok": True,
+        "plan": plan,
+        "plan_info": plan_service.get_plan(plan),
+    }
+
+
+@api_router.post("/plan/wechseln")
+async def plan_wechseln(api_token: str, plan: str) -> dict:
+    """Plan wechseln — nach externer Bezahlung (Patreon/PayPal).
+    Der Wechsel wird hier nur vermerkt; Zahlung läuft außerhalb."""
+    from app.services import plan_service, user_service
+
+    user = user_service.user_by_token(api_token)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Ungültiger Token")
+    try:
+        plan_service.set_user_plan(user["id"], plan)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    info = plan_service.get_plan(plan)
+    return {
+        "ok": True,
+        "plan": plan,
+        "hint": (
+            f"Willkommen bei {info['label']}! Limits aktualisiert. "
+            "Zahlung bitte über Patreon/PayPal abschließen (Links im Footer)."
+            if plan != "free" else "Zurück auf Free — alle Basis-Tools bleiben."
+        ),
+    }
