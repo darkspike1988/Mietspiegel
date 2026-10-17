@@ -25,6 +25,7 @@ from app.schemas.contracts import (
     WiderspruchRequest,
     WiderspruchResponse,
 )
+from app.schemas.landlord_check import LandlordResponse
 from app.schemas.local_providers import LocalProvidersResponse
 from app.schemas.search_agent import (
     Provider,
@@ -56,6 +57,10 @@ from app.services import (
     search_agent,
     tools_engine,
     widerspruch,
+)
+from app.services.location_search import (
+    LocationQuery,
+    LocationSearchResponse,
 )
 
 api_router = APIRouter()
@@ -641,7 +646,7 @@ async def auth_register(req: RegisterRequest) -> dict:
     try:
         result = user_service.register_user(req.email, req.password)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
     return {"ok": True, "email": result["email"], "api_token": result["api_token"],
             "hint": "Token sicher aufbewahren — Profile & Benachrichtigungen hängen daran."}
 
@@ -654,7 +659,7 @@ async def auth_login(req: LoginRequest) -> dict:
     try:
         token = user_service.login_user(req.email, req.password)
     except ValueError as e:
-        raise HTTPException(status_code=401, detail=str(e))
+        raise HTTPException(status_code=401, detail=str(e)) from e
     user = user_service.user_by_token(token)
     if user and not user_service.verify_2fa(user["id"], req.totp_code or ""):
         raise HTTPException(status_code=401, detail="2FA-Code falsch oder fehlt")
@@ -759,3 +764,34 @@ async def auth_notifications(
         user["id"], telegram_chat_id, ntfy_topic, notify_email
     )
     return {"ok": True, "hint": "Kanäle aktualisiert — neue Wohnungs-Treffer landen dort."}
+
+
+# ----------------------------------------------------------------------
+# Vermieter-Check (Konzern-Datenbank + News + Register-Links)
+# ----------------------------------------------------------------------
+
+@api_router.get("/vermieter/check", response_model=LandlordResponse)
+async def vermieter_check(q: str, city: str | None = None) -> LandlordResponse:
+    """Vermieter prüfen: Bekannter Konzern? Lokale/politische News?
+    Offizielle Register-Links (Insolvenz, Jahresabschluss) für die
+    manuelle Prüfung. Basis: kuratierte Konzern-Datenbank +
+    Google News RSS (offizieller Feed)."""
+    from app.services import landlord_check
+
+    if len(q.strip()) < 3:
+        raise HTTPException(status_code=400, detail="Query zu kurz (min. 3 Zeichen)")
+    return await landlord_check.check_landlord(q, city)
+
+
+# ----------------------------------------------------------------------
+# Einfache Ort-Suche: Text statt URL-Copy
+# ----------------------------------------------------------------------
+
+@api_router.post("/search/ort", response_model=LocationSearchResponse)
+async def search_by_location(req: LocationQuery) -> LocationSearchResponse:
+    """Der einfachste Weg: User tippt Ort/Bezirk/PLZ (+ optional Straße,
+    Max-Miete, Zimmer) → wir generieren alle Portal-URLs. Kein Kopieren
+    von Such-URLs mehr nötig."""
+    from app.services import location_search
+
+    return await location_search.search_by_location(req)

@@ -20,8 +20,16 @@ POLL_SECONDS = int(os.environ.get("SEARCH_POLL_SECONDS", "600"))
 
 
 async def poll_all_profiles() -> int:
-    """Alle aktiven Profile einmal abfragen. Returns: Anzahl neuer Treffer."""
-    from app.services import search_agent, storage
+    """Alle aktiven Profile einmal abfragen. Returns: Anzahl neuer Treffer.
+
+    Benachrichtigungs-Logik:
+    - User-Profile: Kanäle des Users (Telegram/ntfy/E-Mail — notifier)
+    - Anonyme Profile: globaler Telegram-Bot (Legacy-Verhalten)
+    - URL-Sharing: gleiche URL wird nur einmal gepollt, Ergebnis
+      würde an alle Abonnenten gehen (derzeit pollt jedes Profil einmal;
+      bei >500 Profilen lohnt die URL-Dedup-Optimierung)
+    """
+    from app.services import notifier, search_agent, storage, user_service
 
     profiles = storage.list_profiles(active_only=True)
     total_new = 0
@@ -34,7 +42,28 @@ async def poll_all_profiles() -> int:
             )
             fresh, _ = await search_agent.refresh_profile(profile, row["id"])
             total_new += len(fresh)
-            if fresh:
+            if not fresh:
+                continue
+            # Wer will diesen Fund sehen?
+            recipients = user_service.get_notification_recipients(row["url"])
+            if recipients:
+                badge_lines = []
+                for item in fresh[:10]:
+                    badge = {"fair": "✅", "tolerance": "🟡",
+                             "brake": "🟠", "wucher": "🔴"}.get(
+                        item.rent_badge.value, "⚪")
+                    price = f"{item.cold_rent_eur:.0f} €" if item.cold_rent_eur else "?"
+                    sqm = f"{item.size_sqm:.0f} m²" if item.size_sqm else "?"
+                    delta = f" (+{item.delta_percent:.0f}%)" if item.delta_percent else ""
+                    badge_lines.append(
+                        f"{badge} {item.title[:60]} · {price} · {sqm}{delta}"
+                    )
+                text = "Neue Wohnungs-Angebote:\n" + "\n".join(badge_lines)
+                await notifier.notify_recipients(
+                    recipients, f"🏠 {row['name']}", text
+                )
+            else:
+                # Anonymes Profil → Legacy: globaler Bot
                 await search_agent.notify_telegram(fresh)
         except Exception as e:
             log.warning("scheduler_profile_failed", profile=row["name"], error=str(e))

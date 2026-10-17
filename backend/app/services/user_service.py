@@ -12,6 +12,7 @@ Benachrichtigungskanäle je User (alle optional, mehrere möglich):
 """
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import hmac
 import secrets
@@ -102,11 +103,14 @@ def update_notification_settings(
     conn = _users_conn()
     sets, params = [], []
     if telegram_chat_id is not None:
-        sets.append("telegram_chat_id = ?"); params.append(telegram_chat_id)
+        sets.append("telegram_chat_id = ?")
+        params.append(telegram_chat_id)
     if ntfy_topic is not None:
-        sets.append("ntfy_topic = ?"); params.append(ntfy_topic)
+        sets.append("ntfy_topic = ?")
+        params.append(ntfy_topic)
     if notify_email is not None:
-        sets.append("notify_email = ?"); params.append(1 if notify_email else 0)
+        sets.append("notify_email = ?")
+        params.append(1 if notify_email else 0)
     if not sets:
         return
     params.append(user_id)
@@ -167,13 +171,11 @@ def _users_conn() -> sqlite3.Connection:
         );
         """
     )
-    # search_profiles.user_id (idempotent: ignoriere Fehler wenn Spalte existiert)
-    try:
+    # search_profiles.user_id (idempotent)
+    with contextlib.suppress(sqlite3.OperationalError):
         conn.execute(
             "ALTER TABLE search_profiles ADD COLUMN user_id INTEGER REFERENCES users(id)"
         )
-    except sqlite3.OperationalError:
-        pass  # Spalte existiert bereits
     conn.commit()
     return conn
 

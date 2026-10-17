@@ -88,12 +88,14 @@ async def notify_user(recipient: dict, title: str, text: str) -> int:
     Returns: Anzahl erfolgreicher Zustellungen.
     """
     delivered = 0
-    if recipient.get("telegram_chat_id"):
-        if await send_telegram(recipient["telegram_chat_id"], f"{title}\n\n{text}"):
-            delivered += 1
-    if recipient.get("ntfy_topic"):
-        if await send_ntfy(recipient["ntfy_topic"], title, text):
-            delivered += 1
+    if recipient.get("telegram_chat_id") and await send_telegram(
+        recipient["telegram_chat_id"], f"{title}\n\n{text}"
+    ):
+        delivered += 1
+    if recipient.get("ntfy_topic") and await send_ntfy(
+        recipient["ntfy_topic"], title, text
+    ):
+        delivered += 1
     if recipient.get("notify_email") and recipient.get("email"):
         ok = await asyncio.to_thread(
             send_email_smtp, recipient["email"], title, text

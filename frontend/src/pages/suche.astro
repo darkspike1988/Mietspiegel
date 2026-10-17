@@ -54,6 +54,25 @@ import Donate from "../components/Donate.astro";
     </section>
 
     <!-- ============ SUCH-AGENT UI ============ -->
+    <!-- ============ EINFACHE ORT-SUCHE (Haupt-Eingabe) ============ -->
+    <section id="ort-suche">
+      <h2>📍 Wo willst du wohnen?</h2>
+      <p class="hint">Einfach eintippen — Bezirk, Stadt oder PLZ. Kein Portal-URL-Kopieren mehr nötig.</p>
+      <div class="ort-box">
+        <div class="ort-row">
+          <input type="text" id="ort-input" placeholder="z.B. Kreuzberg, Berlin Torstraße, oder 10117…" />
+          <input type="number" id="ort-rent" placeholder="max. Miete €" min="0" style="max-width:130px" />
+          <input type="number" id="ort-rooms" placeholder="Zimmer ab" min="0" step="0.5" style="max-width:110px" />
+          <button id="ort-go" type="button">🔍 Suchen</button>
+        </div>
+        <div id="ort-result" hidden>
+          <p id="ort-hint" class="hint"></p>
+          <div id="ort-urls"></div>
+          <button id="ort-save-agent" type="button" hidden>🤖 Als Such-Agent speichern (auto. Benachrichtigung)</button>
+        </div>
+      </div>
+    </section>
+
     <section id="agent-ui">
       <h2>🤖 Dein Such-Agent — jetzt nutzen</h2>
       <p class="hint">
@@ -208,6 +227,11 @@ import Donate from "../components/Donate.astro";
   .tips li { margin-bottom: 0.5rem; line-height: 1.45; }
   .steps li { margin-bottom: 0.9rem; line-height: 1.5; }
   footer { text-align: center; padding: 2rem; color: #888; font-size: 0.85rem; }
+  .ort-box { background: #f4f8ff; border-radius: 12px; padding: 1.5rem; margin-top: 1rem; }
+  .ort-row { display: grid; grid-template-columns: 1fr 130px 110px auto; gap: 0.6rem; }
+  .ort-row input { padding: 0.7rem; border: 1px solid #bbb; border-radius: 6px; font-size: 1rem; }
+  .ort-row button { padding: 0.7rem 1.3rem; background: #0066cc; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 600; }
+  .ort-row button:hover { background: #0055aa; }
   .agent-box { background: #f4f8ff; border-radius: 12px; padding: 1.5rem; margin-top: 1rem; }
   .agent-box label { display: block; margin: 0.6rem 0; font-size: 0.9rem; }
   .agent-box input { width: 100%; padding: 0.55rem; border: 1px solid #bbb; border-radius: 6px; font-size: 0.95rem; box-sizing: border-box; }
@@ -339,6 +363,60 @@ import Donate from "../components/Donate.astro";
   });
 
   loadProfiles();
+
+  // ---- Einfache Ort-Suche: Text → Portal-URLs → Agent-Save ----
+  let savedAgentUrls: Array<{ portal: string; url: string }> = [];
+  document.getElementById("ort-go")?.addEventListener("click", async () => {
+    const query = (document.getElementById("ort-input") as HTMLInputElement | null)?.value?.trim() ?? "";
+    const maxRent = parseFloat((document.getElementById("ort-rent") as HTMLInputElement | null)?.value ?? "") || null;
+    const rooms = parseFloat((document.getElementById("ort-rooms") as HTMLInputElement | null)?.value ?? "") || null;
+    const hint = document.getElementById("ort-hint");
+    const urlsBox = document.getElementById("ort-urls");
+    const result = document.getElementById("ort-result");
+    const saveBtn = document.getElementById("ort-save-agent") as HTMLButtonElement | null;
+    if (!query) { if (hint) { hint.textContent = "⚠️ Bitte Ort, Bezirk oder PLZ eingeben."; } if (result) result.hidden = false; return; }
+    try {
+      const r = await fetch(`${SB}/api/search/ort`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query, max_rent: maxRent, rooms_min: rooms }),
+      });
+      const d = await r.json();
+      if (hint) hint.textContent = d.hint as string;
+      if (urlsBox) {
+        savedAgentUrls = d.urls as Array<{ portal: string; url: string }>;
+        urlsBox.innerHTML = savedAgentUrls.length === 0
+          ? ""
+          : savedAgentUrls.map((u) => `
+            <div class="listing-row">
+              <span class="badge-sm">🏢</span>
+              <a href="${u.url}" target="_blank" rel="noopener noreferrer">${u.portal}</a>
+              <span class="hint">${u.hint ?? ""}</span>
+            </div>`).join("");
+      }
+      if (saveBtn) saveBtn.hidden = savedAgentUrls.length === 0;
+      if (result) result.hidden = false;
+    } catch (e) {
+      if (hint) hint.textContent = `⚠️ ${e instanceof Error ? e.message : String(e)}`;
+      if (result) result.hidden = false;
+    }
+  });
+
+  document.getElementById("ort-save-agent")?.addEventListener("click", async () => {
+    const query = (document.getElementById("ort-input") as HTMLInputElement | null)?.value?.trim() ?? "";
+    for (const entry of savedAgentUrls) {
+      try {
+        await fetch(`${SB}/api/search/profiles`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: `${query} (${entry.portal})`, url: entry.url }),
+        });
+      } catch { /* weiter */ }
+    }
+    const saveBtn = document.getElementById("ort-save-agent") as HTMLButtonElement | null;
+    if (saveBtn) { saveBtn.textContent = `✅ ${savedAgentUrls.length} Profile gespeichert!`; saveBtn.disabled = true; }
+    await loadProfiles();
+  });
 
   // ---- Wohnprofil: Score + lokale Anbieter je Treffer ----
   window.__wohnprofil = async (rent: number, plz: string): Promise<void> => {
