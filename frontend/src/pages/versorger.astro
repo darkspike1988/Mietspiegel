@@ -274,6 +274,10 @@ import Donate from "../components/Donate.astro";
           <p class="hint">⚙️ White-Label-Tarifrechner (Verivox) — direkt hier vergleichen und abschließen:</p>
           <iframe id="vf-iframe" title="Verivox Tarifrechner" loading="lazy"></iframe>
         </div>
+        <div id="vf-lokal" class="lokal-box" hidden>
+          <p><strong>🔌 Lokale Anbieter an deiner PLZ</strong> <span class="hint">(Grundversorger = teuerster Tarif, ohne Vertrag zahlst du ihn automatisch!)</span></p>
+          <div id="vf-lokal-content"></div>
+        </div>
         <div id="vf-links" class="portal-links" hidden>
           <p><strong>Vergleiche jetzt auf allen Portalen</strong> (mindestens 2 nutzen!):</p>
           <div id="vf-link-list"></div>
@@ -368,6 +372,7 @@ import Donate from "../components/Donate.astro";
   .plz-row input, .plz-row select { padding: 0.55rem; border: 1px solid #bbb; border-radius: 6px; font-size: 1rem; }
   .finder button { padding: 0.6rem 1.2rem; background: #0066cc; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; margin-top: 0.5rem; }
   .finder button:hover { background: #0055aa; }
+  .lokal-box { margin-top: 1.2rem; padding: 1rem; background: #fff8e8; border: 1px solid #e8d5a8; border-radius: 8px; font-size: 0.95rem; }
   .portal-links { margin-top: 1.2rem; padding: 1rem; background: #eef4ee; border-radius: 8px; }
   .portal-links a { display: inline-block; margin: 0.4rem 0.6rem 0.4rem 0; padding: 0.5rem 1rem; background: #0066cc; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; }
   .portal-links a:hover { background: #0055aa; }
@@ -414,6 +419,28 @@ import Donate from "../components/Donate.astro";
       }
       const box = document.getElementById("vf-links");
       if (box) box.hidden = false;
+      // Lokale Anbieter direkt anzeigen
+      try {
+        const lr = await fetch(`${VBACKEND}/api/versorger/lokal/${plz}`);
+        if (lr.ok) {
+          const ld = await lr.json();
+          const c = document.getElementById("vf-lokal-content");
+          if (c) {
+            let h = "";
+            if (ld.grundversorger) {
+              h += `<p style="margin:0.4rem 0;">⚖️ Grundversorger: <strong>${ld.grundversorger.name}</strong>${ld.grundversorger.website ? ` — <a href="${ld.grundversorger.website}" target="_blank" rel="noopener noreferrer">Website ↗</a>` : ""}</p>`;
+            }
+            if ((ld.lokale_versorger as string[]).length > 0) {
+              h += `<p style="margin:0.4rem 0;">🏙️ Stadtwerke: ${ld.lokale_versorger.join(" · ")}</p>`;
+            }
+            h += `<p style="margin:0.4rem 0;">🌐 <a href="${ld.breitband_check_url}" target="_blank" rel="noopener noreferrer">Internet-Verfügbarkeit prüfen (Breitbandatlas) ↗</a></p>`;
+            h += `<p class="hint" style="margin:0.4rem 0;">${ld.hint as string}</p>`;
+            c.innerHTML = h;
+          }
+          const lb = document.getElementById("vf-lokal");
+          if (lb) lb.hidden = false;
+        }
+      } catch { /* lokal-Info optional */ }
     } catch (e) { vErr(e instanceof Error ? e.message : String(e)); }
   });
 

@@ -25,6 +25,7 @@ from app.schemas.contracts import (
     WiderspruchRequest,
     WiderspruchResponse,
 )
+from app.schemas.local_providers import LocalProvidersResponse
 from app.schemas.search_agent import (
     Provider,
     RefreshResponse,
@@ -580,3 +581,19 @@ async def wohnprofil(req: WohnprofilRequest) -> WohnprofilResponse:
     from app.services import wohnprofil as wp
 
     return wp.compute_wohnprofil(req)
+
+
+# ----------------------------------------------------------------------
+# Lokale Versorger je PLZ (Grundversorger + Stadtwerke + Breitband)
+# ----------------------------------------------------------------------
+
+@api_router.get("/versorger/lokal/{postal_code}", response_model=LocalProvidersResponse)
+async def versorger_lokal(postal_code: str) -> LocalProvidersResponse:
+    """Lokale Strom-/Gas-Anbieter für eine PLZ: Grundversorger (die
+    wichtigste Info — ohne Vertrag zahlt man dessen teuersten Tarif),
+    lokale Stadtwerke, offizieller Breitbandatlas + BNetzA-Verweise."""
+    from app.services import local_providers
+
+    if len(postal_code) != 5 or not postal_code.isdigit():
+        raise HTTPException(status_code=400, detail="postal_code muss 5-stellig sein")
+    return local_providers.get_local_providers(postal_code)

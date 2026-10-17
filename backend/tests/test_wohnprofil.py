@@ -55,7 +55,7 @@ class TestGesamtmodell:
         r = wp.compute_wohnprofil(_req(delta_percent=5.0, market_stats=stats))
         assert r.score >= 70
         assert r.ampel == "grün"
-        assert len(r.dimensions) == 3
+        assert len(r.dimensions) == 4
 
     def test_ueberteuerte_wohnung(self) -> None:
         # wucher + Budget über 30 % → rot
@@ -74,4 +74,4 @@ class TestGesamtmodell:
         r = wp.compute_wohnprofil(_req(delta_percent=60.0))
         for dim in r.dimensions:
             assert dim.detail
-            assert dim.label in ("Mietspiegel", "Budget", "Markt")
+            assert dim.label in ("Mietspiegel", "Budget", "Markt", "Strom")

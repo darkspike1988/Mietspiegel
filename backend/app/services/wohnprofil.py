@@ -77,6 +77,38 @@ def score_mietspiegel_dimension(delta_percent: float | None) -> DimensionScore:
     )
 
 
+BUDGET_FULL, BUDGET_MID = 30.0, 30.0
+
+
+def score_strom_dimension(strom_eur: float) -> DimensionScore:
+    """10 Bonus-Punkte: Stromkosten-Realitätscheck.
+
+    Ø-Haushaltsstrompreis liegt historisch bei 30-40 ct/kWh; ein 3-Personen-
+    Haushalt (4000 kWh) zahlt damit ~110-135 €/Monat gemischt. Wir bewerten
+    den angegebenen Monats-Strompreis grob gegen Erfahrungswerte — auffällig
+    hohe Werte deuten auf überteuerte Tarife (→ Versorger-Vergleich!).
+    """
+    # grobe Erfahrungsbänder für einen durchschnittlichen Haushalt
+    if strom_eur <= 0:
+        return DimensionScore(
+            weight=10, points=5.0, label="Strom",
+            detail="Kein Strompreis angegeben — neutral bewertet.",
+        )
+    if strom_eur <= 90:
+        pts = 10.0
+        txt = f"{strom_eur:.0f} €/Monat Strom — sparsamer Haushalt oder günstiger Tarif."
+    elif strom_eur <= 140:
+        pts = 7.0
+        txt = f"{strom_eur:.0f} €/Monat Strom — üblicher Bereich für Ø-Haushalt."
+    else:
+        pts = 3.0
+        txt = (
+            f"{strom_eur:.0f} €/Monat Strom — hoch. Versorger-Vergleich nutzen "
+            "(Tarif-Finder auf /versorger) — oft 100-300 €/Jahr sparbar."
+        )
+    return DimensionScore(weight=10, points=pts, label="Strom", detail=txt)
+
+
 def score_budget_dimension(housing_cost_percent: float) -> DimensionScore:
     """30 Punkte: 30 %-Faustregel → Punktzahl (linear)."""
     if housing_cost_percent <= 20:
@@ -133,10 +165,14 @@ def compute_wohnprofil(req: WohnprofilRequest) -> WohnprofilResponse:
     cost_pct = round(total_housing / req.net_income_eur * 100, 1) if req.net_income_eur > 0 else 0.0
     dim_budget = score_budget_dimension(cost_pct)
     dim_markt = score_markt_dimension(req.market_stats)
+    dim_strom = score_strom_dimension(req.strom_eur)
 
-    score = round(
-        dim_miete.points + dim_budget.points + dim_markt.points, 1
+    raw_score = round(
+        dim_miete.points + dim_budget.points + dim_markt.points
+        + dim_strom.points, 1
     )
+    # Normierung auf 100 (4 Dimensionen: 50+30+20+10=110 max.)
+    score = min(100.0, round(raw_score / 110 * 100, 1))
 
     if score >= 70:
         ampel = "grün"
@@ -162,5 +198,5 @@ def compute_wohnprofil(req: WohnprofilRequest) -> WohnprofilResponse:
         ampel=ampel,
         housing_cost_percent=cost_pct,
         empfehlung=empfehlung,
-        dimensions=[dim_miete, dim_budget, dim_markt],
+        dimensions=[dim_miete, dim_budget, dim_markt, dim_strom],
     )

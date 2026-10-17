@@ -220,6 +220,7 @@ import Donate from "../components/Donate.astro";
   .listing-row { background: white; border-radius: 8px; padding: 0.7rem 1rem; margin: 0.4rem 0; font-size: 0.92rem; }
   .listing-row a { color: #0066cc; text-decoration: none; font-weight: 600; }
   .badge-sm { font-weight: 700; }
+  .wp-btn { padding: 0.25rem 0.6rem !important; font-size: 0.78rem !important; margin: 0 0 0 0.4rem !important; background: #2e7d32 !important; }
 </style>
 
 <script>
@@ -232,6 +233,8 @@ import Donate from "../components/Donate.astro";
     title: string; url: string | null; cold_rent_eur: number | null;
     size_sqm: number | null; postal_code: string | null;
     source: string; rent_badge: string; delta_percent: number | null;
+    overpayment_eur_per_year: number | null;
+    legal_basis: string | null; recommendation: string | null;
   };
 
   async function loadProfiles(): Promise<void> {
@@ -298,11 +301,15 @@ import Donate from "../components/Donate.astro";
           const price = l.cold_rent_eur != null ? `${l.cold_rent_eur.toFixed(0)} €` : "?";
           const sqm = l.size_sqm != null ? `${l.size_sqm.toFixed(0)} m²` : "?";
           const delta = l.delta_percent != null ? ` (${l.delta_percent > 0 ? "+" : ""}${l.delta_percent.toFixed(0)}%)` : "";
+          const overpay = l.overpayment_eur_per_year
+            ? ` · <strong style="color:#b00020">+${l.overpayment_eur_per_year.toFixed(0)} €/Jahr zu viel</strong>`
+            : "";
           return `
             <div class="listing-row">
               <span class="badge-sm">${badgeEmoji(l.rent_badge)}</span>
-              ${l.url ? `<a href="${l.url}" target="_blank" rel="noopener noreferrer">${l.title.slice(0, 70)}</a>` : l.title.slice(0, 70)}
-              <span>· ${price} · ${sqm}${l.postal_code ? ` · ${l.postal_code}` : ""} · ${l.source}${delta}</span>
+              ${l.url ? `<a href="${l.url}" target="_blank" rel="noopener noreferrer">${l.title.slice(0, 62)}</a>` : l.title.slice(0, 62)}
+              <span>· ${price} · ${sqm}${l.postal_code ? ` · ${l.postal_code}` : ""} · ${l.source}${delta}${overpay}</span>
+              <button class="wp-btn" onclick="window.__wohnprofil(${l.cold_rent_eur ?? 0}, '${l.postal_code ?? ""}')" type="button">🎯 Wohnprofil</button>
             </div>`;
         }).join("");
     res.hidden = false;
@@ -332,4 +339,53 @@ import Donate from "../components/Donate.astro";
   });
 
   loadProfiles();
+
+  // ---- Wohnprofil: Score + lokale Anbieter je Treffer ----
+  window.__wohnprofil = async (rent: number, plz: string): Promise<void> => {
+    const incomeStr = prompt("Nettoeinkommen/Monat (EUR)?", "2500");
+    const income = parseFloat(incomeStr ?? "0") || 0;
+    if (income <= 0) return;
+    const nk = parseFloat(prompt("NK-Vorauszahlung/Monat (EUR)?", "150") ?? "150") || 150;
+    const strom = parseFloat(prompt("Strom/Monat (EUR)?", "90") ?? "90") || 90;
+    try {
+      const r = await fetch(`${SB}/api/wohnprofil`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cold_rent_eur: rent, nebenkosten_eur: nk, strom_eur: strom,
+          net_income_eur: income,
+        }),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const d = await r.json();
+      const ampel = d.ampel === "grün" ? "🟢" : d.ampel === "gelb" ? "🟡" : "🔴";
+      let msg = `${ampel} WOHNPROFIL: ${d.score}/100 Punkte\nWohnkosten: ${d.housing_cost_percent}% des Einkommens\n\n`;
+      for (const dim of d.dimensions as Array<{ label: string; points: number; weight: number; detail: string }>) {
+        msg += `${dim.label}: ${dim.points}/${dim.weight} Punkte\n  ${dim.detail}\n`;
+      }
+      msg += `\n→ ${d.empfehlung as string}`;
+      // Lokale Anbieter falls PLZ bekannt
+      if (/^\d{5}$/.test(plz)) {
+        try {
+          const lr = await fetch(`${SB}/api/versorger/lokal/${plz}`);
+          if (lr.ok) {
+            const ld = await lr.json();
+            msg += `\n\n🔌 LOKALE ANBIETER (${plz}):\n`;
+            if (ld.grundversorger) {
+              msg += `Grundversorger: ${ld.grundversorger.name}\n  (Ohne Vertrag = dessen teuerster Tarif!)\n`;
+            } else {
+              msg += `Grundversorger: siehe BNetzA-Suche\n  ${ld.bnetza_grundversorger_url}\n`;
+            }
+            if ((ld.lokale_versorger as string[]).length > 0) {
+              msg += `Stadtwerke: ${ld.lokale_versorger.join(", ")}\n`;
+            }
+            msg += `Breitband prüfen: ${ld.breitband_check_url}`;
+          }
+        } catch { /* lokal-Info optional */ }
+      }
+      alert(msg.slice(0, 1500));
+    } catch (e) {
+      alert(`⚠️ ${e instanceof Error ? e.message : String(e)}`);
+    }
+  };
 </script>
