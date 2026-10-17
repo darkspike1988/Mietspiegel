@@ -21,7 +21,6 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
 
 # Default location: <repo>/data/processed/germany_cities.json
 # Walking upward from app/services/data_loader.py:
@@ -42,7 +41,7 @@ class CityDataset:
     slug: str
     name: str
     federal_state: str
-    nuts_code: Optional[str]
+    nuts_code: str | None
     kind: str  # qualifizierter_mietspiegel | einfacher_mietspiegel | marktbericht
     publisher: str
     source_title: str
@@ -81,7 +80,7 @@ class CityDatabase:
     def all(self) -> list[CityDataset]:
         return list(self.datasets.values())
 
-    def get(self, slug: str) -> Optional[CityDataset]:
+    def get(self, slug: str) -> CityDataset | None:
         return self.by_slug.get(slug.lower())
 
     def find_by_plz(self, plz: str) -> list[CityDataset]:
@@ -160,11 +159,11 @@ def _load_from_path(path: Path) -> CityDatabase:
 
 
 # Module-level singleton, lazily populated.
-_db: Optional[CityDatabase] = None
-_load_path: Optional[Path] = None
+_db: CityDatabase | None = None
+_load_path: Path | None = None
 
 
-def get_database(path: Optional[Path] = None) -> CityDatabase:
+def get_database(path: Path | None = None) -> CityDatabase:
     """Return the cached CityDatabase, loading it on first call."""
     global _db, _load_path
     target = Path(path) if path else DEFAULT_DATA_PATH
@@ -177,7 +176,7 @@ def get_database(path: Optional[Path] = None) -> CityDatabase:
     return _db
 
 
-def reload_dataset(path: Optional[Path] = None) -> CityDatabase:
+def reload_dataset(path: Path | None = None) -> CityDatabase:
     """Force a fresh load from disk (use after admin updates)."""
     global _db, _load_path
     _db = None
@@ -203,7 +202,7 @@ def find_by_plz(plz: str) -> list[CityDataset]:
     return get_database().find_by_plz(plz)
 
 
-def get_by_slug(slug: str) -> Optional[CityDataset]:
+def get_by_slug(slug: str) -> CityDataset | None:
     return get_database().get(slug)
 
 

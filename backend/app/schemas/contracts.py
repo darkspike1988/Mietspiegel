@@ -6,17 +6,15 @@ All API contracts live here. Update this file when changing public endpoints.
 from __future__ import annotations
 
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator
-
 
 # ----------------------------------------------------------------------
 # /api/parse — Mietvertrag-PDF Parser
 # ----------------------------------------------------------------------
 
 
-class LocationQuality(str, Enum):
+class LocationQuality(Enum):
     """Wohnlage per §558 BGB."""
 
     EINFACH = "einfach"
@@ -28,24 +26,24 @@ class ParsedLease(BaseModel):
     """Structured extraction result from a Mietvertrag PDF."""
 
     address: str = Field(..., description="Full street address incl. city")
-    city: Optional[str] = Field(None, description="City name (auto-matched from address)")
-    postal_code: Optional[str] = Field(None, description="5-digit PLZ")
+    city: str | None = Field(None, description="City name (auto-matched from address)")
+    postal_code: str | None = Field(None, description="5-digit PLZ")
     cold_rent_eur: float = Field(..., gt=0, description="Kaltmiete in EUR")
-    warm_rent_eur: Optional[float] = Field(None, description="Warmmiete in EUR")
-    additional_costs_eur: Optional[float] = Field(None, description="Nebenkosten in EUR")
-    deposit_eur: Optional[float] = Field(None, description="Kaution in EUR")
+    warm_rent_eur: float | None = Field(None, description="Warmmiete in EUR")
+    additional_costs_eur: float | None = Field(None, description="Nebenkosten in EUR")
+    deposit_eur: float | None = Field(None, description="Kaution in EUR")
     size_sqm: float = Field(..., gt=0, description="Wohnfläche in m²")
-    rooms: Optional[float] = Field(None, ge=0, le=20, description="Anzahl Zimmer")
-    build_year: Optional[int] = Field(None, ge=1850, le=2030, description="Baujahr")
-    location_quality: Optional[LocationQuality] = Field(
+    rooms: float | None = Field(None, ge=0, le=20, description="Anzahl Zimmer")
+    build_year: int | None = Field(None, ge=1850, le=2030, description="Baujahr")
+    location_quality: LocationQuality | None = Field(
         None, description="Wohnlage per §558 BGB"
     )
     extras: list[str] = Field(default_factory=list, description="Ausstattungsmerkmale (Balkon, Aufzug, ...)")
-    contract_date: Optional[str] = Field(None, description="Datum des Vertrags ISO 8601")
+    contract_date: str | None = Field(None, description="Datum des Vertrags ISO 8601")
 
     @field_validator("location_quality", mode="before")
     @classmethod
-    def _norm_location(cls, v: Optional[str]) -> Optional[str]:
+    def _norm_location(cls, v: str | None) -> str | None:
         if v is None:
             return None
         v = v.strip().lower()
@@ -69,7 +67,7 @@ class ParseResponse(BaseModel):
 # ----------------------------------------------------------------------
 
 
-class Verdict(str, Enum):
+class Verdict(Enum):
     FAIR = "fair"  # ≤10% über Vergleichsmiete
     TOLERANCE = "tolerance"  # ≤20% über Vergleichsmiete
     BRAKE = "brake"  # ≤50% über Vergleichsmiete (Mietpreisbremse-Schwelle)
@@ -80,25 +78,25 @@ class RentCheckRequest(BaseModel):
     """Either provide full parsed lease OR minimal fields for direct check."""
 
     # Mode 1: pre-parsed lease (from /api/parse)
-    lease: Optional[ParsedLease] = None
+    lease: ParsedLease | None = None
     # Mode 2: minimal direct input
-    address: Optional[str] = None
-    cold_rent_eur: Optional[float] = Field(None, gt=0)
-    size_sqm: Optional[float] = Field(None, gt=0)
-    postal_code: Optional[str] = Field(
+    address: str | None = None
+    cold_rent_eur: float | None = Field(None, gt=0)
+    size_sqm: float | None = Field(None, gt=0)
+    postal_code: str | None = Field(
         None,
         description="5-digit PLZ — improves city resolution when not in lease.address",
     )
-    build_year: Optional[int] = Field(
+    build_year: int | None = Field(
         None, ge=1850, le=2030, description="Baujahr des Gebäudes (Wohnwertmerkmal)"
     )
-    location_quality: Optional[LocationQuality] = Field(
+    location_quality: LocationQuality | None = Field(
         None, description="Wohnlage per §558 BGB (einfach | mittel | gut)"
     )
 
     @field_validator("lease")
     @classmethod
-    def _either_or(cls, v: Optional[ParsedLease]) -> Optional[ParsedLease]:
+    def _either_or(cls, v: ParsedLease | None) -> ParsedLease | None:
         # Top-level validator can't enforce mutually-exclusive w/ other fields easily;
         # we do the check in the route handler.
         return v
@@ -169,7 +167,7 @@ class WiderspruchRequest(BaseModel):
     """Input for generating a formal objection letter to the landlord."""
 
     check_response: RentCheckResponse
-    landlord_name: Optional[str] = Field(None, description="Name des Vermieters")
+    landlord_name: str | None = Field(None, description="Name des Vermieters")
     tenant_name: str = Field(..., min_length=2)
     tenant_address: str = Field(..., min_length=5)
 
@@ -196,7 +194,7 @@ class WiderspruchResponse(BaseModel):
 class ErrorResponse(BaseModel):
     ok: bool = False
     error: str
-    detail: Optional[str] = None
+    detail: str | None = None
 
 
 class HealthResponse(BaseModel):

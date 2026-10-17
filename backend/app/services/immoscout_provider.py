@@ -223,16 +223,16 @@ def parse_response(data: dict[str, Any]) -> list[Listing]:
             attrs = item.get("attributes") or []
             values = [str(a.get("value", "")) for a in attrs]
 
-            def _num_from(idx: int, pattern: str) -> float | None:
-                if idx >= len(values):
+            def _num_from(vals: list[str], idx: int, pattern: str) -> float | None:
+                if idx >= len(vals):
                     return None
                 import re as _re
-                m = _re.search(pattern, values[idx].replace("\u00a0", " "))
-                return float(m.group(1).replace(",", ".")) if m else None
+                hit = _re.search(pattern, vals[idx].replace("\u00a0", " "))
+                return float(hit.group(1).replace(",", ".")) if hit else None
 
-            cold_rent = _num_from(0, r"(\d+(?:[.,]\d+)?)")
-            size_sqm = _num_from(1, r"(\d+(?:[.,]\d+)?)")
-            rooms = _num_from(2, r"(\d+(?:[.,]\d+)?)")
+            cold_rent = _num_from(values, 0, r"(\d+(?:[.,]\d+)?)")
+            size_sqm = _num_from(values, 1, r"(\d+(?:[.,]\d+)?)")
+            rooms = _num_from(values, 2, r"(\d+(?:[.,]\d+)?)")
 
             # Adresse parsen: "Hellersdorfer Str 91, 12619 Berlin, Kaulsdorf"
             addr_line = str(item.get("address", {}).get("line", ""))

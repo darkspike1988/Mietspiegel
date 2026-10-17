@@ -14,8 +14,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from app.schemas.contracts import (
     ComparisonData,
@@ -26,7 +25,6 @@ from app.schemas.contracts import (
     Verdict,
 )
 from app.services.data_loader import CityDataset, get_database
-
 
 # ----------------------------------------------------------------------
 # Property-based scoring constants (Wohnwertmerkmale §558 BGB)
@@ -49,7 +47,7 @@ BUILD_YEAR_FACTORS = [
 ]
 
 
-def build_year_factor(year: Optional[int]) -> float:
+def build_year_factor(year: int | None) -> float:
     """Return the build-year premium factor (1.0 = neutral)."""
     if not year:
         return 1.0
@@ -59,8 +57,11 @@ def build_year_factor(year: Optional[int]) -> float:
     return 1.0
 
 
-def location_factor(quality: Optional[str]) -> float:
-    return LOCATION_FACTORS.get((quality or "mittel").lower(), 1.0)
+def location_factor(quality: str | None) -> float:
+    if quality is None:
+        return 1.0
+    quality_str = quality.value if hasattr(quality, "value") else str(quality)
+    return LOCATION_FACTORS.get(quality_str.lower(), 1.0)
 
 
 # ----------------------------------------------------------------------
@@ -118,8 +119,8 @@ def compute_fair_rent(
     *,
     city_avg_eur_per_sqm: float,
     size_sqm: float,
-    build_year: Optional[int],
-    location_quality: Optional[str],
+    build_year: int | None,
+    location_quality: str | None,
 ) -> float:
     """Compute the fair monthly rent (Kaltmiete) in EUR."""
     by = build_year_factor(build_year)
@@ -138,7 +139,7 @@ def _build_comparison(ds: CityDataset, size_sqm: float) -> ComparisonData:
             f"{ds.source_title} ({ds.year}) · {ds.publisher} · "
             f"{ds.kind.replace('_', ' ')} · {ds.source_url}"
         ),
-        fetched_at=datetime.now(timezone.utc).isoformat(),
+        fetched_at=datetime.now(UTC).isoformat(),
     )
 
 
@@ -165,8 +166,8 @@ class CityMatchResult:
 
 def resolve_city(
     address: str,
-    postal_code: Optional[str] = None,
-) -> Optional[CityMatchResult]:
+    postal_code: str | None = None,
+) -> CityMatchResult | None:
     """Resolve a city from address text and optional explicit PLZ.
 
     Lookup priority:

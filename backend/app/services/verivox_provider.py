@@ -26,6 +26,7 @@ iframe), sondern:
 from __future__ import annotations
 
 import os
+
 import structlog
 
 log = structlog.get_logger(__name__)

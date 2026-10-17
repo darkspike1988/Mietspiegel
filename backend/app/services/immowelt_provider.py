@@ -68,8 +68,8 @@ def parse_html(html: str) -> list[Listing]:
 
     listing_index = 0
     for m in LINK_RE.finditer(html):
-        url, expose_id, title_attr, inner = (
-            m.group(1), m.group(2), m.group(3), m.group(4) or "",
+        url, expose_id, title_attr = (
+            m.group(1), m.group(2), m.group(3),
         )
         if expose_id in seen:
             continue
@@ -148,11 +148,6 @@ def parse_market_stats(html: str) -> dict[str, float | int] | None:
     """AggregateOffer aus dem Product-JSON-LD (Markt-Statistik)."""
     import json
 
-    m = re.search(
-        r'<script type="application/ld\+json"[^>]*>(.*?)</script>',
-        html,
-        re.DOTALL,
-    )
     blocks = re.findall(
         r'<script type="application/ld\+json"[^>]*>(.*?)</script>', html, re.DOTALL
     )

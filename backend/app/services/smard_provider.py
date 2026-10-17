@@ -18,7 +18,7 @@ Lizenz: Daten der BNetzA, CC BY 4.0, Quelle kenntlich machen.
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import httpx
 import structlog
@@ -59,7 +59,7 @@ async def fetch_day_ahead_prices(resolution: str = "hour") -> list[dict]:
             continue
         result.append({
             "timestamp": datetime.fromtimestamp(
-                ts_ms / 1000, tz=timezone.utc
+                ts_ms / 1000, tz=UTC
             ).isoformat(),
             "price_eur_per_mwh": float(price),
             "price_ct_per_kwh": round(float(price) / 10.0, 2),

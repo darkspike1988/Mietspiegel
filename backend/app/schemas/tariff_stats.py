@@ -20,12 +20,11 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
 
-class Portal(str, Enum):
+class Portal(Enum):
     VERIVOX = "verivox"
     CHECK24 = "check24"
     IDEALO = "idealo"
@@ -38,7 +37,7 @@ class TariffObservation(BaseModel):
     product: str = Field(..., description="strom | gas | dsl | mobilfunk")
     postal_code: str = Field(..., pattern=r"^\d{5}$")
     tariff_name: str = Field(..., min_length=1, max_length=120)
-    ct_per_kwh: Optional[float] = Field(None, ge=0, le=200)
+    ct_per_kwh: float | None = Field(None, ge=0, le=200)
     base_fee_eur_per_year: float = Field(0, ge=0)
     bonus_eur_first_year: float = Field(0, ge=0)
     observed_at: datetime = Field(
@@ -51,11 +50,11 @@ class PortalStats(BaseModel):
     """Statistik-Zusammenfassung je Portal."""
     portal: str
     observation_count: int
-    min_ct_kwh: Optional[float] = None
-    max_ct_kwh: Optional[float] = None
-    median_ct_kwh: Optional[float] = None
-    avg_ct_kwh: Optional[float] = None
-    cheapest_tariff: Optional[str] = None
+    min_ct_kwh: float | None = None
+    max_ct_kwh: float | None = None
+    median_ct_kwh: float | None = None
+    avg_ct_kwh: float | None = None
+    cheapest_tariff: str | None = None
 
 
 class TariffStatisticsResponse(BaseModel):
@@ -77,9 +76,9 @@ class SmardTimeStats(BaseModel):
     by_weekday: list[dict] = Field(
         ..., description="[{'weekday': 'Mo', 'avg_ct_kwh': .., 'min': .., 'max': ..}]"
     )
-    cheapest_hour: Optional[dict] = None
-    most_expensive_hour: Optional[dict] = None
-    cheapest_weekday: Optional[dict] = None
+    cheapest_hour: dict | None = None
+    most_expensive_hour: dict | None = None
+    cheapest_weekday: dict | None = None
     observation_count: int
     insight: str
 

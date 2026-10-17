@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 from typing import Annotated
 
-from pydantic import BaseModel
 from fastapi import (
     APIRouter,
     File,
@@ -14,6 +13,7 @@ from fastapi import (
     UploadFile,
     status,
 )
+from pydantic import BaseModel
 
 from app.schemas.contracts import (
     CityInfo,
@@ -25,16 +25,16 @@ from app.schemas.contracts import (
     WiderspruchRequest,
     WiderspruchResponse,
 )
-from app.schemas.tariff_stats import (
-    SmardTimeStats,
-    TariffObservation,
-    TariffStatisticsResponse,
-)
 from app.schemas.search_agent import (
     Provider,
     RefreshResponse,
     SearchProfile,
     SearchResultsResponse,
+)
+from app.schemas.tariff_stats import (
+    SmardTimeStats,
+    TariffObservation,
+    TariffStatisticsResponse,
 )
 from app.schemas.tools import (
     KautionCheckRequest,
@@ -159,7 +159,7 @@ def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def _validate_lease(raw: dict) -> ParsedLease:  # type: ignore[name-defined]
+def _validate_lease(raw: dict):
     from pydantic import ValidationError
 
     from app.schemas.contracts import ParsedLease
@@ -473,7 +473,7 @@ async def refresh_profile_by_id(profile_id: int) -> RefreshResponse:
         profile_name=profile.name,
         new_listings=fresh,
         total_seen=total_seen,
-        checked_at=datetime.now(timezone.utc).isoformat(),
+        checked_at=datetime.now(UTC).isoformat(),
     )
 
 

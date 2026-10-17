@@ -11,7 +11,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
-from typing import Any, Optional
+from typing import Any
 
 import structlog
 
@@ -51,7 +51,7 @@ class CacheService:
         h = hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()[:32]
         return f"msai:{namespace}:{h}"
 
-    async def get(self, namespace: str, payload: Any) -> Optional[dict]:
+    async def get(self, namespace: str, payload: Any) -> dict | None:
         key = self._key(namespace, payload)
         if self._redis is not None:
             try:
@@ -62,7 +62,7 @@ class CacheService:
         async with self._lock:
             return json.loads(self._mem[key]) if key in self._mem else None
 
-    async def set(self, namespace: str, payload: Any, value: dict, ttl: Optional[int] = None) -> None:
+    async def set(self, namespace: str, payload: Any, value: dict, ttl: int | None = None) -> None:
         key = self._key(namespace, payload)
         raw = json.dumps(value, ensure_ascii=False)
         ttl = ttl or self._ttl

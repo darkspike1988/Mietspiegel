@@ -10,9 +10,9 @@ LLM call via MistralClient.chat_json().
 from __future__ import annotations
 
 import json
-import structlog
 
 import pdfplumber
+import structlog
 
 from app.integrations.mistral import MistralClient, MistralError
 

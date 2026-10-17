@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import sqlite3
 import threading
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import structlog
@@ -81,7 +81,7 @@ def save_profile(name: str, url: str, provider: str = "rss", city: str | None = 
         cur = conn.execute(
             "INSERT INTO search_profiles (name, url, provider, city, created_at) "
             "VALUES (?, ?, ?, ?, ?)",
-            (name, url, provider, city, datetime.now(timezone.utc).isoformat()),
+            (name, url, provider, city, datetime.now(UTC).isoformat()),
         )
         conn.commit()
         return int(cur.lastrowid or 0)
@@ -133,7 +133,7 @@ def save_seen_listing(profile_id: int, dedup_key: str, listing: dict) -> None:
             "INSERT OR IGNORE INTO seen_listings (profile_id, dedup_key, listing_json, first_seen_at) "
             "VALUES (?, ?, ?, ?)",
             (profile_id, dedup_key, json.dumps(listing, ensure_ascii=False),
-             datetime.now(timezone.utc).isoformat()),
+             datetime.now(UTC).isoformat()),
         )
         conn.commit()
 
@@ -179,7 +179,7 @@ def save_observation(
             "base_fee_eur, bonus_eur, observed_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
             (portal, product, postal_code, tariff_name, ct_per_kwh,
              base_fee_eur, bonus_eur,
-             observed_at or datetime.now(timezone.utc).isoformat()),
+             observed_at or datetime.now(UTC).isoformat()),
         )
         conn.commit()
         return int(cur.lastrowid or 0)

@@ -169,12 +169,12 @@ def aggregate_smard_by_time(prices: list[dict]) -> SmardTimeStats:
         by_hour.setdefault(ts.hour, []).append(ct)
         by_wd.setdefault(ts.weekday(), []).append(ct)
 
-    def _agg(values: list[float]) -> dict:
+    def _agg(vals: list[float]) -> dict:
         return {
-            "avg_ct_kwh": round(sum(values) / len(values), 2),
-            "min_ct_kwh": round(min(values), 2),
-            "max_ct_kwh": round(max(values), 2),
-            "n": len(values),
+            "avg_ct_kwh": round(sum(vals) / len(vals), 2),
+            "min_ct_kwh": round(min(vals), 2),
+            "max_ct_kwh": round(max(vals), 2),
+            "n": len(vals),
         }
 
     hours = [
